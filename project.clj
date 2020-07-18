@@ -8,6 +8,9 @@
                  [clj-http "3.10.1"]
                  [org.clojure/data.xml "0.0.8"]
                  ]
+  :plugins [
+            [lein-cljfmt "0.6.8"]
+            ]
   :main ^:skip-aot goodstats.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})
