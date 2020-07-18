@@ -10,6 +10,7 @@
                  ]
   :plugins [
             [lein-cljfmt "0.6.8"]
+            [lein-cloverage "1.1.2"]
             ]
   :main ^:skip-aot goodstats.core
   :target-path "target/%s"
