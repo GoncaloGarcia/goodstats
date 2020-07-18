@@ -1,44 +1,18 @@
-# goodstats
+[![codecov](https://codecov.io/gh/GoncaloGarcia/goodstats/branch/master/graph/badge.svg)](https://codecov.io/gh/GoncaloGarcia/goodstats)
+[![Build Status](https://travis-ci.com/GoncaloGarcia/goodstats.svg?branch=master)](https://travis-ci.com/GoncaloGarcia/goodstats)
 
-FIXME: description
 
-## Installation
+# goodstats (WIP)
 
-Download from http://example.com/FIXME.
+Fetches Goodreads user data to provide stats about reading patterns. Ultimately the goal is to make Spotify's Year in Review but for books.
 
-## Usage
+## Run Tests
 
-FIXME: explanation
+`lein test`
 
-    $ java -jar goodstats-0.1.0-standalone.jar [args]
-
-## Options
-
-FIXME: listing of options this app accepts.
-
-## Examples
-
-...
-
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
 
 ## License
 
-Copyright © 2020 FIXME
+Copyright &copy; 2020 Gonçalo Garcia
 
-This program and the accompanying materials are made available under the
-terms of the Eclipse Public License 2.0 which is available at
-http://www.eclipse.org/legal/epl-2.0.
-
-This Source Code may also be made available under the following Secondary
-Licenses when the conditions for such availability set forth in the Eclipse
-Public License, v. 2.0 are satisfied: GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or (at your
-option) any later version, with the GNU Classpath Exception which is available
-at https://www.gnu.org/software/classpath/license.html.
+This project is licensed under the Mozilla Public License 2.0.
