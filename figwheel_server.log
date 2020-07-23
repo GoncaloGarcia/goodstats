@@ -1,0 +1,15 @@
+Compiling build :goodstats to "resources/public/js/modern.js" from ["src/cljs"]...
+[32mSuccessfully compiled build :goodstats to "resources/public/js/modern.js" in 8.382 seconds.[0m
+notifying browser that file changed:  resources/public/js/modern.js
+notifying browser that file changed:  resources/public/js/out/goog/deps.js
+notifying browser that file changed:  resources/public/js/out/goodstats/index.js
+Compiling build :goodstats to "resources/public/js/modern.js" from ["src/cljs"]...
+[31mFailed to compile build :goodstats from ["src/cljs"] in 0.175 seconds.[0m
+[36m----  Could not Analyze  src/cljs/goodstats/index.cljs  ----[0m
+
+  [1mNo such namespace: simple-brepl.client, could not locate simple_brepl/client.cljs, simple_brepl/client.cljc, or JavaScript source providing "simple-brepl.client" (Please check that namespaces with dashes use underscores in the ClojureScript file name) [0m
+
+[36m----  Analysis Error : Please see src/cljs/goodstats/index.cljs  ----[0m
+Compiling build :goodstats to "resources/public/js/modern.js" from ["src/cljs"]...
+[32mSuccessfully compiled build :goodstats to "resources/public/js/modern.js" in 0.522 seconds.[0m
+notifying browser that file changed:  resources/public/js/out/goodstats/index.js

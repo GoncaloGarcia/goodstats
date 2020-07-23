@@ -1,5 +1,6 @@
 (ns goodstats.index
-  (:require [clojure.browser.repl :as repl]))
+ (:require [goodstats.login]
+           [goodstats.shopping]))
 
-(repl/connect "http://localhost:9000/repl")
 
+(js/alert "Hello from a browser repl")

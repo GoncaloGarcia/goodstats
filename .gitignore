@@ -14,3 +14,5 @@ pom.xml.asc
 out/
 .rebel_readline_history
 resources/public/cljs-out
+*.iml
+figwheel_server.log

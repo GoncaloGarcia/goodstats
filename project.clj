@@ -8,10 +8,8 @@
   ;; CLJ AND CLJS source code paths
   :source-paths ["src/clj" "src/cljs"]
   :dependencies [
-                 [org.clojure/clojure "1.10.1"]
-                 [org.clojure/clojurescript "1.10.773"]
-                 [clj-http "3.10.1"]
-                 [org.clojure/data.xml "0.0.8"]
+                 [org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojurescript "1.10.520"]
                  ]
   :plugins [
             [lein-cljfmt "0.6.8"]
@@ -19,22 +17,20 @@
             [lein-license "0.1.8"]
             [lein-cljsbuild "1.1.8"]
             ]
-  ;; cljsbuild options configuration
-  :cljsbuild {:builds
-              [{;; CLJS source code path
-                :source-paths ["src/cljs"]
 
-                ;; Google Closure (CLS) options configuration
-                :compiler {;; CLS generated JS script filename
-                           :output-to "resources/public/js/modern.js"
 
-                           ;; minimal JS optimization directive
-                           :optimizations :whitespace
+  :aliases {"fig"       ["trampoline" "run" "-m" "figwheel.main"]
+            "fig:build" ["trampoline" "run" "-m" "figwheel.main" "-b" "dev" "-r"]
+            "fig:min"   ["run" "-m" "figwheel.main" "-O" "advanced" "-bo" "dev"]
+            "fig:test"  ["run" "-m" "figwheel.main" "-co" "test.cljs.edn" "-m" "hello-world.test-runner"]}
 
-                           ;; generated JS code prettyfication
-                           :pretty-print true}}]}
-  ;; to clean JS files generated during the build
-  :clean-targets ^{:protect false} [:target-path "resources/public/js/"]
-  :main ^:skip-aot goodstats.core
-  :target-path "target/%s"
-  :profiles {:uberjar {:aot :all}})
+  :profiles {:dev {:dependencies [
+                                  [clj-http "3.10.1"]
+                                  [org.clojure/data.xml "0.0.8"]
+                                  [com.bhauman/figwheel-main "0.2.3"]
+                                  [compojure "1.6.1"]
+                                  [domina "1.0.3"]
+                                  [com.bhauman/rebel-readline-cljs "0.1.4"]]
+                   }}
+
+  )
