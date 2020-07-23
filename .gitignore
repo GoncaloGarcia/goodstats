@@ -12,3 +12,5 @@ pom.xml.asc
 .hgignore
 .hg/
 out/
+.rebel_readline_history
+resources/public/cljs-out
