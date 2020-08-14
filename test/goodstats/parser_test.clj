@@ -33,16 +33,16 @@
                     </shelves>
                   </GoodreadsResponse>") :content)
 
-        expected-result  '({:shelves ({:user_shelf ({:id ("5625761")}
-                                                    {:name ("read")}
-                                                    {:book_count ("526")}
-                                                    {:exclusive_flag ("true")}
+        expected-result  '({:shelves ({:user_shelf ({:id "5625761"}
+                                                    {:name "read"}
+                                                    {:book_count "526"}
+                                                    {:exclusive_flag "true"}
                                                     {:sort ()}
                                                     {:order ()}
                                                     {:per_page ()}
                                                     {:display_fields ()}
-                                                    {:featured ("true")}
-                                                    {:recommend_for ("true")}
+                                                    {:featured "true"}
+                                                    {:recommend_for "true"}
                                                     {:sticky ()})})})]
     (testing "Transform xml"
       (is (= (parser/xml->map xml-test) expected-result)))))

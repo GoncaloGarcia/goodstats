@@ -1,6 +1,3 @@
-(ns goodstats.index
- (:require [goodstats.login]
-           [goodstats.shopping]))
+(ns ^:figwheel-always goodstats.index
+  (:require [goodstats.login]))
 
-
-(js/alert "Hello from a browser repl")

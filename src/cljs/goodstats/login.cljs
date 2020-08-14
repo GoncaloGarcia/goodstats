@@ -1,29 +1,27 @@
 (ns goodstats.login
-  (:use [domina :only [by-id value]]))
+  (:require [reagent.dom :as rdom]
+            [reagent.ratom :as ratom]
+            [goog.dom :as gdom]
+            [ajax.core :as ajax]))
 
-;; define the function to be attached to form submission event
-(defn validate-form []
-  ;; get email and password element from their ids in the HTML form
-  (let [email (by-id "email")
-        password (by-id "password")]
-    (if (and (> (count (value email)) 0)
-             (> (count (value password)) 0))
-      true
-      (do (js/alert "Please, adoads the form!")
-          false))))
+(defn simple-component []
+  (let [book (ratom/atom "")]
+    (ajax/ajax-request {:uri             "/book/1"
+                        :method          :get
+                        :format          (ajax/json-request-format)
+                        :response-format (ajax/json-response-format {:keywords? true})
+                        :handler         (fn [response] (reset! book (second response)))})
+    (fn [] [:div
+            (first (:title @book))])))
 
-;; define the function to attach validate-form to onsubmit event of
-;; the form
-(defn init []
-  ;; verify that js/document exists and that it has a getElementById
-  ;; property
-  (if (and js/document
-           (.-getElementById js/document))
-    ;; get loginForm by element id and set its onsubmit property to
-    ;; our validate-form function
-    (let [login-form (.getElementById js/document "loginForm")]
-      (set! (.-onsubmit login-form) validate-form))))
+(defn timer-component []
+  (let [seconds-elapsed (ratom/atom 0)]                     ;; setup, and local state
+    (fn []                                                  ;; inner, render function is returned
+      (js/setTimeout #(swap! seconds-elapsed inc) 1000)
+      [:div "Seconds Elapsed: " @seconds-elapsed])))
 
-(set! (.-onload js/window) init)
+(rdom/render
+ [simple-component]
+ (gdom/getElement "root"))
 
 

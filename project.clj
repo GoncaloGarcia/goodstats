@@ -27,10 +27,13 @@
   :profiles {:dev {:dependencies [
                                   [clj-http "3.10.1"]
                                   [org.clojure/data.xml "0.0.8"]
-                                  [com.bhauman/figwheel-main "0.2.3"]
                                   [compojure "1.6.1"]
-                                  [domina "1.0.3"]
-                                  [com.bhauman/rebel-readline-cljs "0.1.4"]]
+                                  [cljs-ajax "0.8.0"]
+                                  [cheshire "5.10.0"]
+                                  [reagent "1.0.0-alpha2"]
+                                  [com.bhauman/rebel-readline-cljs "0.1.4"]
+                                  [com.bhauman/figwheel-main "0.2.3"]
+                                  ]
                    }}
 
   )

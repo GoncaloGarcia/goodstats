@@ -32,4 +32,9 @@
                (parser/get-request-content)
                (parser/xml->map))))))
 
+(defn get-several-user-shelves
+  "Retrieves the shelves of multiple users"
+  [users-list]
+  (pmap get-user-shelves users-list))
+
 

@@ -19,3 +19,5 @@
     (parser/xml->map book-content)
     (parser/map-list->map book-content)
     (parser/filter-unecessary-keys book-content :buy_links :book_links :reviews_widget)))
+
+
