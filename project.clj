@@ -4,7 +4,7 @@
   :license {:name "Mozilla Public License 2.0"
             :url  "none"
             :year 2020
-            :key "mpl-2.0"}
+            :key  "mpl-2.0"}
   ;; CLJ AND CLJS source code paths
   :source-paths ["src/clj" "src/cljs"]
   :dependencies [
@@ -16,6 +16,7 @@
             [lein-cloverage "1.1.2"]
             [lein-license "0.1.8"]
             [lein-cljsbuild "1.1.8"]
+            [lein-ring "0.12.5"]
             ]
 
 
@@ -24,16 +25,32 @@
             "fig:min"   ["run" "-m" "figwheel.main" "-O" "advanced" "-bo" "dev"]
             "fig:test"  ["run" "-m" "figwheel.main" "-co" "test.cljs.edn" "-m" "hello-world.test-runner"]}
 
-  :profiles {:dev {:dependencies [
-                                  [clj-http "3.10.1"]
-                                  [org.clojure/data.xml "0.0.8"]
-                                  [compojure "1.6.1"]
-                                  [cljs-ajax "0.8.0"]
-                                  [cheshire "5.10.0"]
-                                  [reagent "1.0.0-alpha2"]
-                                  [com.bhauman/rebel-readline-cljs "0.1.4"]
-                                  [com.bhauman/figwheel-main "0.2.3"]
-                                  ]
-                   }}
+  :profiles {:dev  {:dependencies [
+                                   [clj-http "3.10.1"]
+                                   [org.clojure/data.xml "0.0.8"]
+                                   [compojure "1.6.1"]
+                                   [cljs-ajax "0.8.0"]
+                                   [cheshire "5.10.0"]
+                                   [reagent "1.0.0-alpha2"]
+                                   [com.bhauman/rebel-readline-cljs "0.1.4"]
+                                   [clj-time "0.15.2"]
+                                   [metosin/reitit-frontend "0.5.5"]
+                                   [clj-oauth "1.5.5"]
+                                   [com.bhauman/figwheel-main "0.2.3"]
+                                   ]
+                    }
+             :test {:dependencies [
+                                   [clj-http "3.10.1"]
+                                   [org.clojure/data.xml "0.0.8"]
+                                   [compojure "1.6.1"]
+                                   [cljs-ajax "0.8.0"]
+                                   [cheshire "5.10.0"]
+                                   [reagent "1.0.0-alpha2"]
+                                   [com.bhauman/rebel-readline-cljs "0.1.4"]
+                                   [clj-time "0.15.2"]
+                                   [metosin/reitit-frontend "0.5.5"]
+                                   [clj-oauth "1.5.5"]
+                                   ]
+                    }}
 
   )

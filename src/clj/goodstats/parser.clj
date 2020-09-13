@@ -1,6 +1,4 @@
-(ns goodstats.parser
-  (:import (clojure.data.xml Element)
-           (clojure.lang LazySeq)))
+(ns goodstats.parser)
 
 (defn get-request-content
   "Retrieves just the request content from the GoodreadsResponse"
@@ -24,7 +22,7 @@
            key (key entry)
            value (val entry)]
        (conj elem1
-             (if (= (type value) LazySeq)
+             (if (= (type value) clojure.lang.LazySeq)
                (hash-map key (map-list->map value))
                elem2))))
    {}
@@ -35,7 +33,7 @@
   its content"
   [xml]
   (map (fn convert [elem]
-         (if (= (type elem) Element)
+         (if (= (type elem) clojure.data.xml.Element)
            (let [key (get elem :tag)
                  val (get elem :content)
                  attrs (get elem :attrs)]
@@ -43,7 +41,7 @@
                (= :shelf key) attrs
                :else (hash-map key
                                (if (and
-                                    (not (= Element (type (first (get elem :content)))))
+                                    (not (= clojure.data.xml.Element (type (first (get elem :content)))))
                                     (= (count (get elem :content)) 1))
                                  (first (get elem :content))
                                  (map convert val)))))

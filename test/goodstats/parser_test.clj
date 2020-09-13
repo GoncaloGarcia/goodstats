@@ -1,8 +1,7 @@
 (ns goodstats.parser-test
-  (:require [clojure.test :refer :all])
-  (:require [goodstats.parser :refer [filter-unecessary-keys]]
-            [goodstats.parser :as parser]
-            [clojure.data.xml :as data]))
+  (:require [clojure.test :refer :all]
+            [clojure.data.xml :as data]
+            [goodstats.parser :as parser]))
 
 (deftest filter-unecessary-keys-test
   (testing "Correctly removes key from map"
@@ -33,16 +32,16 @@
                     </shelves>
                   </GoodreadsResponse>") :content)
 
-        expected-result  '({:shelves ({:user_shelf ({:id "5625761"}
-                                                    {:name "read"}
-                                                    {:book_count "526"}
-                                                    {:exclusive_flag "true"}
-                                                    {:sort ()}
-                                                    {:order ()}
-                                                    {:per_page ()}
-                                                    {:display_fields ()}
-                                                    {:featured "true"}
-                                                    {:recommend_for "true"}
-                                                    {:sticky ()})})})]
+        expected-result '({:shelves ({:user_shelf ({:id "5625761"}
+                                                   {:name "read"}
+                                                   {:book_count "526"}
+                                                   {:exclusive_flag "true"}
+                                                   {:sort ()}
+                                                   {:order ()}
+                                                   {:per_page ()}
+                                                   {:display_fields ()}
+                                                   {:featured "true"}
+                                                   {:recommend_for "true"}
+                                                   {:sticky ()})})})]
     (testing "Transform xml"
       (is (= (parser/xml->map xml-test) expected-result)))))
