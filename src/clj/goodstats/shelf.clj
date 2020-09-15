@@ -24,8 +24,7 @@
                                           :GET
                                           url
                                           params)]
-       (client/get url {:query-params (merge params credentials)
-                        :debug        true}))
+       (client/get url {:query-params (merge params credentials)}))
      :body)))
 
 (defn get-user-books
@@ -53,13 +52,14 @@
 
 (defn get-this-years-books
   "Returns the books added this year"
-  [books]
-  (let [formatter (f/formatter "E MMMM dd H:m:s Z YYYY")
-        current-year-epoch (c/to-long (t/date-time (t/year (l/local-now))))]
-    (filter (fn [date]
-              (let [date-added (c/to-long (f/parse formatter (date :date_added)))]
-                (> date-added current-year-epoch)))
-            books)))
+  ([books] (get-this-years-books books :date_added))
+  ([books key]
+   (let [formatter (f/formatter "E MMMM dd H:m:s Z YYYY")
+         current-year-epoch (c/to-long (t/date-time (t/year (l/local-now))))]
+     (filter (fn [date]
+               (let [date-added (c/to-long (f/parse formatter (date key)))]
+                 (> date-added current-year-epoch)))
+             books))))
 
 
 

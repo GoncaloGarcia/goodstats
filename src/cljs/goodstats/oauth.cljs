@@ -1,6 +1,7 @@
 (ns goodstats.oauth
   (:require [ajax.core :as ajax]))
 
+
 (defn redirect-to-goodreads-component []
   (ajax/ajax-request {:uri             " /auth "
                       :method          :get

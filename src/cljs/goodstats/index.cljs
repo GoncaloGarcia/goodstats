@@ -11,7 +11,7 @@
 (defn current-page []
   [:div
    [:ul
-    [:li [:a {:href (rfe/href ::stats)} "Stats"]]]
+    [:li [:a {:href (rfe/href ::results)} "Stats"]]]
    (if @match
      (let [view (:view (:data @match))]
        [view @match]))

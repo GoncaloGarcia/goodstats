@@ -6,8 +6,8 @@
             [oauth.client :as oauth]))
 
 
-(def oauth-client (oauth/make-consumer "D90LKtylhkXsY6GAwpXhQ"
-                                       "lxwJMZnSPUNQmZQNlkgItOtA5GH58CpOdDlS0AQGI"
+(def oauth-client (oauth/make-consumer (System/getenv "API_KEY")
+                                       (System/getenv "API_SECRET")
                                        "https://www.goodreads.com/oauth/request_token"
                                        "https://www.goodreads.com/oauth/access_token"
                                        "https://www.goodreads.com/oauth/authorize"
