@@ -10,6 +10,7 @@
   :dependencies [
                  [org.clojure/clojure "1.9.0"]
                  [org.clojure/clojurescript "1.10.520"]
+                 [hickory "0.7.1"]
                  ]
   :plugins [
             [lein-cljfmt "0.6.8"]
@@ -36,8 +37,10 @@
                                    [clj-time "0.15.2"]
                                    [metosin/reitit-frontend "0.5.5"]
                                    [clj-oauth "1.5.5"]
-                                   [com.bhauman/figwheel-main "0.2.3"]
-                                   ]
+                                   [cljsjs/recharts "1.6.2-0"]
+                                   [com.bhauman/figwheel-main "0.2.11"]
+                                   [cljsjs/react-bootstrap "1.3.0-0"]
+                                   [enlive "1.1.6"]                                   ]
                     }
              :test {:dependencies [
                                    [clj-http "3.10.1"]
@@ -50,7 +53,7 @@
                                    [clj-time "0.15.2"]
                                    [metosin/reitit-frontend "0.5.5"]
                                    [clj-oauth "1.5.5"]
-                                   ]
+                                   [enlive "1.1.6"]                                   ]
                     }}
 
   )

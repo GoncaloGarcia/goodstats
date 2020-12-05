@@ -2,7 +2,10 @@
   (:require [goodstats.shelf :as books]
             [clj-time.format :as f]
             [clj-time.core :as t]
-            [clojure.set :as set]))
+            [clojure.set :as set]
+            [clojure.edn :as edn]
+            [goodstats.book :as book]
+            [clojure.string :as string]))
 
 (defn filter-empty-key
   [books key]
@@ -30,7 +33,7 @@
   "Sorts the books by the time it took to read them"
   [books]
   (let [formatter (f/formatter "E MMMM dd H:m:s Z YYYY")
-        filtered-books (filter-empty-key books :started_at)]
+        filtered-books (filter-empty-key (filter-empty-key books :started_at) :read_at)]
     (sort-by :read-time-days
              (map
                (fn [book]
@@ -39,6 +42,33 @@
                        interval-in-days (float (/ (t/in-hours (t/interval start-date-parsed finish-date-parsed)) 24))]
                    (assoc book :read-time-days interval-in-days)))
                filtered-books))))
+
+(defn books-grouped-by-read-time
+  [sorted-by-read-time]
+  (->> sorted-by-read-time
+       (reduce
+         (fn [prev book]
+           (let [read-time (:read-time-days book)
+                 title (get-in book [:book :title])
+                 book-data {:read-time-days read-time :title title}]
+             (cond
+               (< read-time 7) (update-in prev [:1week :books] conj book-data)
+               (< read-time 14) (update-in prev [:2week :books] conj book-data)
+               (< read-time 30) (update-in prev [:1month :books] conj book-data)
+               (< read-time 60) (update-in prev [:2month :books] conj book-data)
+               (< read-time 120) (update-in prev [:4month :books] conj book-data)
+               (< read-time 240) (update-in prev [:8month :books] conj book-data)
+               :else (update-in prev [:1year :books] conj book-data))))
+         {:1week  {:name "1 week" :fill "#9EEBCF" :count 0 :books '()}
+          :2week  {:name "2 weeks" :fill "#FF6300" :count 0 :books '()}
+          :1month {:name "1 month" :fill "#19A974" :count 0 :books '()}
+          :2month {:name "2 months" :fill "#FFD700" :count 0 :books '()}
+          :4month {:name "4 months" :fill "#00449E" :count 0 :books '()}
+          :8month {:name "8 months" :fill "#A463F2" :count 0 :books '()}
+          :1year  {:name "1 year" :fill "#FF80CC" :count 0 :books '()}})
+       (map
+         (fn [elem]
+           (update-in (val elem) [:count] + (count (:books (val elem))))))))
 
 (defn get-top-5-fastest
   "Returns the 5 books read the fastest from the list provided as argument"
@@ -54,6 +84,72 @@
              #(assoc (select-keys (%1 :book) [:title]) :read-time-days (%1 :read-time-days))
              (take-last 5 books))))
 
+(defn authors-sorted-by-review-count
+  [authors]
+  (let [sorted-authors (sort-by #(count (flatten (list (:title %1)))) authors)]
+    sorted-authors))
+
+(defn authors-sorted-by-review-score
+  [authors]
+  (let [sorted-authors
+        (sort-by :avg-rating authors)]
+    sorted-authors))
+
+(defn authors-grouped-by-country
+  [authors]
+  (let [authors-with-country (filter #(not (= "" (:country %1))) authors)]
+    (reduce (fn [first second]
+              (merge-with #(flatten (list %1 %2)) first {(:country second) (:author-name second)}))
+            {}
+            authors-with-country)))
+
+(defn top-5-most-read-authors
+  [authors-sorted]
+  (take 5 (reverse authors-sorted)))
+
+(defn top-5-best-rated-authors
+  [authors-sorted]
+  (take 5 (reverse authors-sorted)))
+
+
+(defn books-by-month
+  [read-this-year]
+  (as-> read-this-year books
+        (map #(hash-map :read-at (:read_at %1) :title (get-in %1 [:book :title])) books)
+        (group-by #(second (string/split (:read-at %1) #" ")) books)
+        (list ["Jan" (get books "Jan")]
+              ["Feb" (get books "Feb")]
+              ["Mar" (get books "Mar")]
+              ["May" (get books "May")]
+              ["Jun" (get books "Jun")]
+              ["Jul" (get books "Jul")]
+              ["Aug" (get books "Aug")]
+              ["Sep" (get books "Sep")]
+              ["Oct" (get books "Oct")]
+              ["Nov" (get books "Nov")]
+              ["Dec" (get books "Dec")])
+        (map #(hash-map :month (first %1)  :count (count (second %1)) :books (second %1)) books)
+        (reduce (fn [[updated total] element]
+                  (let [total (+ total (:count element))]
+                    [(conj updated (assoc element :sum total))
+                     total]))
+                [[] 0] books)
+        (first books))
+  )
+
+(defn books-with-extra-data
+  [books]
+  (->> books
+       (pmap #(merge %1 (goodstats.book/get-books-with-extra-data (get-in %1 [:book :link]))))))
+
+
+(defn get-genres-by-frequency
+  [books-with-genre]
+  (->> books-with-genre
+       (map :book-genres)
+       (flatten)
+       (frequencies)
+       (map #(assoc {} :name (key %) :size (val %)))))
 
 
 (defn books-read-this-year
@@ -62,23 +158,58 @@
     (filter-empty-key (books/get-books-in-shelf "read" books) :read_at)
     :read_at))
 
-
-(defn do-stats
-  "Returns the entire set of stats"
-  [user consumer access-token]
-  (let [books (books/get-user-books user consumer access-token)
+(defn do-author-stats
+  [books]
+  "Returns the entire set of stats for authors"
+  (let [
         added-this-year (books/get-this-years-books books)
         read-this-year (books-read-this-year books)
+        authors-read-this-year (books/get-books-by-author read-this-year)
+        authors (books/get-books-by-author books)
+        sorted-by-count (authors-sorted-by-review-count authors-read-this-year)
+        sorted-by-rating (authors-sorted-by-review-score authors-read-this-year)
+        grouped-by-country (authors-grouped-by-country authors-read-this-year)
+        ]
+    {:all        authors-read-this-year
+     :most-read  (top-5-most-read-authors sorted-by-count)
+     :best-rated (top-5-best-rated-authors sorted-by-rating)
+     :country    grouped-by-country
+     }))
+
+(defn do-genre-stats
+  "Returns the entire set of stats for books"
+  [read-this-year]
+  {:all {:name "Genres" :children (get-genres-by-frequency read-this-year)}})
+
+(defn do-book-stats
+  "Returns the entire set of stats for books"
+  [read-this-year books]
+  (let [
+        title-added-this-year (map #(get-in % [:book :title]) (books/get-this-years-books books))
+        title-read-this-year (map #(get-in % [:book :title]) read-this-year)
         sorted-by-page-count (books-sorted-by-page-count read-this-year)
-        sorted-by-read-time (books-sorted-by-read-time read-this-year)]
-    {:all                  (map #(select-keys (:book %1) [:title :image_url]) read-this-year)
-     :discovered-this-year (map #(get-in %1 [:book :title])
-                                (set/intersection (set read-this-year)
-                                                  (set added-this-year)))
-     :planning             (map #(get-in %1 [:book :title])
-                                (set/difference (set read-this-year)
-                                                (set added-this-year)))
+        sorted-by-read-time (books-sorted-by-read-time read-this-year)
+        discovered-this-year (set/intersection (set title-read-this-year)
+                                               (set title-added-this-year))
+        planning (set/difference (set title-read-this-year)
+                              (set title-added-this-year))]
+    {:all                  (map #(merge (select-keys %1 [:book-cover]) (select-keys (:book %1) [:title])) read-this-year)
      :top-5-longest        (get-top-5-biggest sorted-by-page-count)
+     :discovered-this-year {:name "Discovered this year" :count (count discovered-this-year) :data discovered-this-year}
+     :planning             {:name "Planning on reading" :count (count planning) :data planning}
      :bottom-5-longest     (get-top-5-smallest sorted-by-page-count)
      :top-5-fastest        (get-top-5-fastest sorted-by-read-time)
-     :bottom-5-fastest     (get-top-5-slowest sorted-by-read-time)}))
+     :bottom-5-fastest     (get-top-5-slowest sorted-by-read-time)
+     :by-month             (books-by-month read-this-year)
+     :by-read-time         (books-grouped-by-read-time sorted-by-read-time)}))
+
+(defn do-stats
+  [user consumer token]
+  (let [books (books/get-user-books user consumer token)
+        read-this-year (books-read-this-year books)
+        with-extra-data (books-with-extra-data read-this-year)]
+    {:book-stats (do-book-stats with-extra-data books)
+     :author-stats (do-author-stats books)
+     :genre-stats (do-genre-stats with-extra-data)}
+    )
+  )
