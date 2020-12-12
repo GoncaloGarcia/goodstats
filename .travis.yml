@@ -1,5 +1,5 @@
 language: clojure
-script: lein test
+script: clj -Mtest
 
 after_success:
   - CLOVERAGE_VERSION=1.1.2 lein cloverage --codecov

@@ -3,30 +3,30 @@
             [reagent.core :as reagent]
             [ajax.core :as ajax]
             [clojure.edn :as edn]
-            [cljsjs.recharts]))
+            ["recharts" :as recharts]))
 
 
-(def ResponsiveContainer (reagent/adapt-react-class (aget js/Recharts "ResponsiveContainer")))
-(def XAxis (reagent/adapt-react-class (aget js/Recharts "XAxis")))
-(def YAxis (reagent/adapt-react-class (aget js/Recharts "YAxis")))
-(def CartesianGrid (reagent/adapt-react-class (aget js/Recharts "CartesianGrid")))
-(def Tooltip (reagent/adapt-react-class (aget js/Recharts "Tooltip")))
-(def Legend (reagent/adapt-react-class (aget js/Recharts "Legend")))
-(def Line (reagent/adapt-react-class (aget js/Recharts "Line")))
-(def Label (reagent/adapt-react-class (aget js/Recharts "Label")))
-(def PolarAngleAxis (reagent/adapt-react-class (aget js/Recharts "PolarAngleAxis")))
+(def ResponsiveContainer (reagent/adapt-react-class recharts/ResponsiveContainer))
+(def XAxis (reagent/adapt-react-class recharts/XAxis))
+(def YAxis (reagent/adapt-react-class recharts/YAxis))
+(def CartesianGrid (reagent/adapt-react-class recharts/CartesianGrid))
+(def Tooltip (reagent/adapt-react-class recharts/Tooltip))
+(def Legend (reagent/adapt-react-class recharts/Legend))
+(def Line (reagent/adapt-react-class recharts/Line))
+(def Label (reagent/adapt-react-class recharts/Label))
+(def PolarAngleAxis (reagent/adapt-react-class recharts/PolarAngleAxis))
 
 
-(def RadialBarChart (reagent/adapt-react-class (aget js/Recharts "RadialBarChart")))
-(def Treemap (reagent/adapt-react-class (aget js/Recharts "Treemap")))
-(def BarChart (reagent/adapt-react-class (aget js/Recharts "BarChart")))
-(def AreaChart (reagent/adapt-react-class (aget js/Recharts "AreaChart")))
-(def PieChart (reagent/adapt-react-class (aget js/Recharts "PieChart")))
-(def LineChart (reagent/adapt-react-class (aget js/Recharts "LineChart")))
-(def Bar (reagent/adapt-react-class (aget js/Recharts "Bar")))
-(def RadialBar (reagent/adapt-react-class (aget js/Recharts "RadialBar")))
-(def Area (reagent/adapt-react-class (aget js/Recharts "Area")))
-(def Pie (reagent/adapt-react-class (aget js/Recharts "Pie")))
+(def RadialBarChart (reagent/adapt-react-class recharts/RadialBarChart))
+(def Treemap (reagent/adapt-react-class recharts/Treemap))
+(def BarChart (reagent/adapt-react-class recharts/BarChart))
+(def AreaChart (reagent/adapt-react-class recharts/AreaChart))
+(def PieChart (reagent/adapt-react-class recharts/PieChart))
+(def LineChart (reagent/adapt-react-class recharts/LineChart))
+(def Bar (reagent/adapt-react-class recharts/Bar))
+(def RadialBar (reagent/adapt-react-class recharts/RadialBar))
+(def Area (reagent/adapt-react-class recharts/Area))
+(def Pie (reagent/adapt-react-class recharts/Pie))
 
 (def data {:book-stats   {:all '({:book-cover "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1599537296l/43207719._SX318_.jpg",
                                  :title "Ayoade on Top"}

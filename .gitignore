@@ -16,3 +16,13 @@ out/
 resources/public/cljs-out
 *.iml
 figwheel_server.log
+node_modules/
+public/scripts
+/src/gen
+*.log
+.shadow-cljs
+.idea
+.lein-*
+.nrepl-*
+.DS_Store
+.cpcache/

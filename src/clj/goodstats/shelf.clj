@@ -7,7 +7,6 @@
             [clj-time.coerce :as c]
             [clj-time.core :as t]
             [clj-time.local :as l]
-
             [oauth.client :as oauth]
             [clojure.tools.reader.edn :as edn]))
 

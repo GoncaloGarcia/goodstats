@@ -1,0 +1,11 @@
+;; shadow-cljs configuration
+{
+ :dev-http     {8081 "public"}
+ :nrepl        {:port 55555}
+ :deps         {:aliases [:cljs]}
+ :dependencies []
+ :builds       {
+                :app {:target     :browser
+                      :output-dir "public/scripts/"
+                      :asset-path "/scripts"
+                      :modules    {:core {:init-fn goodstats.index/init!}}}}}
