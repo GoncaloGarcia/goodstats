@@ -211,5 +211,18 @@
     {:book-stats (do-book-stats with-extra-data books)
      :author-stats (do-author-stats books)
      :genre-stats (do-genre-stats with-extra-data)}
-    )
-  )
+    ))
+
+
+(comment
+  "Setup environment"
+  (do
+    (:require '[oauth.client :as oauth])
+    (def user (System/getenv "USER_ID"))
+    (def token (System/getenv "API_KEY"))
+    (def consumer (oauth.client/make-consumer token
+                                              (System/getenv "API_SECRET")
+                                              "https://www.goodreads.com/oauth/request_token"
+                                              "https://www.goodreads.com/oauth/access_token"
+                                              "https://www.goodreads.com/oauth/authorize"
+                                              :hmac-sha1))))

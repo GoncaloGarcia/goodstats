@@ -1,4 +1,4 @@
-(ns ^:figwheel-always goodstats.index
+(ns goodstats.index
   (:require [reitit.frontend :as rf]
             [reitit.frontend.easy :as rfe]
             [reagent.dom :as rdom]
@@ -17,6 +17,7 @@
        [view @match]))
    ])
 
+
 (def routes
   [["/login"
     {:name ::stats
@@ -33,5 +34,3 @@
     ;; set to false to enable HistoryAPI
     {:use-fragment true})
   (rdom/render [current-page] (.getElementById js/document "app")))
-
-(init!)
