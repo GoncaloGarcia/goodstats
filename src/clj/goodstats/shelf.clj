@@ -13,12 +13,13 @@
 (defn get-shelf-books-response
   "Retrieves Goodreads Shelf data by id and returns
   a parsed XML structure"
-  [user key consumer token]
+  [user key consumer token page]
   (data/parse-str
     ((let [url (str "https://www.goodreads.com/review/list/" user ".xml")
            params {:v        2
                    :key      key
                    :shelf    ""
+                   :page     page
                    :per_page 200}
            credentials (oauth/credentials consumer
                                           (:oauth_token token)
@@ -32,12 +33,18 @@
 (defn get-user-books
   "Retrieves a user's books from Goodreads"
   [user consumer token]
-  (->> (get-shelf-books-response user (System/getenv "API_KEY") consumer token)
-       (parser/get-request-content)
-       (parser/xml->map)
-       (map first)
-       (map val)
-       (map parser/map-list->map)))
+  (loop [i 1
+         books '()]
+    (let [response (->> (get-shelf-books-response user (System/getenv "API_KEY") consumer token i)
+                        (parser/get-request-content)
+                        (parser/xml->map)
+                        (map first)
+                        (map val)
+                        (map parser/map-list->map))
+          updated-books (concat books response)]
+      (if (> 200 (count response))
+        updated-books
+        (recur (inc i) updated-books)))))
 
 (defn get-books-by-shelf
   "Returns the books grouped by shelf"
@@ -79,16 +86,19 @@
   "Returns the books grouped by author id"
   [books]
   (let [books-with-authors (filter #(> (count (get-in %1 [:book :authors])) 0) books)]
-    (->> books-with-authors
-         (flatten-author-and-book)
-         (map #(select-keys %1 [:rating :author-link :author-id :author-name :author-image_url :title]))
-         (group-by :author-id)
-         (map #(combine-author-books (val %1)))
-         (pmap #(merge %1 {:country (authors/get-author-country (:author-link %1))}))
-         (map #(merge %1 (let [elements (map edn/read-string (flatten (list (:rating %1))))
-                               avg (/ (reduce + elements) (count elements))]
-                           {:avg-rating avg})))
-         )))
+    (as-> books-with-authors b
+          (flatten-author-and-book b)
+          (map #(select-keys %1 [:rating :author-link :author-id :author-name :author-image_url :title]) b)
+          (group-by :author-id b)
+          (map #(combine-author-books (val %1)) b)
+          (let [all b
+                all-countries (map #(hash-map :country %)
+                                   (authors/get-author-country (map :author-link all)))]
+            (map #(merge (key %) (val %)) (zipmap b all-countries)))
+          (map #(merge %1 (let [elements (map edn/read-string (flatten (list (:rating %1))))
+                                avg (/ (reduce + elements) (count elements))]
+                            {:avg-rating avg})) b)
+          )))
 
 (defn get-this-years-books
   "Returns the books added this year"

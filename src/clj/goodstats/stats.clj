@@ -4,8 +4,10 @@
             [clj-time.core :as t]
             [clojure.set :as set]
             [clojure.edn :as edn]
+            [iso-country-codes.core :as codes]
             [goodstats.book :as book]
-            [clojure.string :as string]))
+            [clojure.string :as string])
+  (:import (clojure.lang LazySeq)))
 
 (defn filter-empty-key
   [books key]
@@ -42,6 +44,15 @@
                        interval-in-days (float (/ (t/in-hours (t/interval start-date-parsed finish-date-parsed)) 24))]
                    (assoc book :read-time-days interval-in-days)))
                filtered-books))))
+
+(defn books-with-review-and-page-count
+  [books]
+  (let [books-with-page-count (filter (fn [books] (= (type (get-in books [:book :num_pages])) java.lang.String)) books)]
+    (map #(hash-map
+            :title (get-in % [:book :title])
+            :rating (Integer/parseInt (:rating %))
+            :pages (Integer/parseInt (get-in % [:book :num_pages])))
+         books-with-page-count)))
 
 (defn books-grouped-by-read-time
   [sorted-by-read-time]
@@ -84,32 +95,30 @@
              #(assoc (select-keys (%1 :book) [:title]) :read-time-days (%1 :read-time-days))
              (take-last 5 books))))
 
-(defn authors-sorted-by-review-count
+(defn authors-with-review-count-and-score
   [authors]
-  (let [sorted-authors (sort-by #(count (flatten (list (:title %1)))) authors)]
-    sorted-authors))
-
-(defn authors-sorted-by-review-score
-  [authors]
-  (let [sorted-authors
-        (sort-by :avg-rating authors)]
-    sorted-authors))
+  (let [authors-with-reviews-and-score
+        (map #(hash-map
+                :author (:author-name %)
+                :review-count (count (flatten (list (:title %))))
+                :review-score (Float/parseFloat (format "%.2f" (float (:avg-rating %)))))
+             authors)]
+    authors-with-reviews-and-score))
 
 (defn authors-grouped-by-country
   [authors]
   (let [authors-with-country (filter #(not (= "" (:country %1))) authors)]
-    (reduce (fn [first second]
-              (merge-with #(flatten (list %1 %2)) first {(:country second) (:author-name second)}))
-            {}
-            authors-with-country)))
-
-(defn top-5-most-read-authors
-  [authors-sorted]
-  (take 5 (reverse authors-sorted)))
-
-(defn top-5-best-rated-authors
-  [authors-sorted]
-  (take 5 (reverse authors-sorted)))
+    (map (fn [item]
+           (hash-map :country (key item)
+                     :value (if (not= (type (val item)) java.lang.String)
+                              (reduce #(str %1 ", " %2) (val item))
+                              (val item))))
+         (reduce (fn [first second]
+                   (merge-with #(flatten (list %1 %2)) first
+                               {(codes/country-translate :name :alpha-2 (clojure.string/replace (:country second) #"The " ""))
+                                (:author-name second)}))
+                 {}
+                 authors-with-country))))
 
 
 (defn books-by-month
@@ -128,7 +137,7 @@
               ["Oct" (get books "Oct")]
               ["Nov" (get books "Nov")]
               ["Dec" (get books "Dec")])
-        (map #(hash-map :month (first %1)  :count (count (second %1)) :books (second %1)) books)
+        (map #(hash-map :month (first %1) :count (count (second %1)) :books (second %1)) books)
         (reduce (fn [[updated total] element]
                   (let [total (+ total (:count element))]
                     [(conj updated (assoc element :sum total))
@@ -139,8 +148,10 @@
 
 (defn books-with-extra-data
   [books]
-  (->> books
-       (pmap #(merge %1 (goodstats.book/get-books-with-extra-data (get-in %1 [:book :link]))))))
+  (as-> books b
+        (goodstats.book/get-books-with-extra-data (map #(get-in %1 [:book :link]) b))
+        (zipmap books b)
+        (map #(merge (key %) (val %)) b)))
 
 
 (defn get-genres-by-frequency
@@ -149,7 +160,9 @@
        (map :book-genres)
        (flatten)
        (frequencies)
-       (map #(assoc {} :name (key %) :size (val %)))))
+       (map #(assoc {} :label (key %) :value (val %)))
+       (sort-by :value)
+       (take-last 30)))
 
 
 (defn books-read-this-year
@@ -166,20 +179,18 @@
         read-this-year (books-read-this-year books)
         authors-read-this-year (books/get-books-by-author read-this-year)
         authors (books/get-books-by-author books)
-        sorted-by-count (authors-sorted-by-review-count authors-read-this-year)
-        sorted-by-rating (authors-sorted-by-review-score authors-read-this-year)
+        with-count (authors-with-review-count-and-score authors-read-this-year)
         grouped-by-country (authors-grouped-by-country authors-read-this-year)
         ]
-    {:all        authors-read-this-year
-     :most-read  (top-5-most-read-authors sorted-by-count)
-     :best-rated (top-5-best-rated-authors sorted-by-rating)
-     :country    grouped-by-country
+    {:all      authors-read-this-year
+     :favorite with-count
+     :country  grouped-by-country
      }))
 
 (defn do-genre-stats
   "Returns the entire set of stats for books"
   [read-this-year]
-  {:all {:name "Genres" :children (get-genres-by-frequency read-this-year)}})
+  {:all (get-genres-by-frequency read-this-year)})
 
 (defn do-book-stats
   "Returns the entire set of stats for books"
@@ -192,30 +203,34 @@
         discovered-this-year (set/intersection (set title-read-this-year)
                                                (set title-added-this-year))
         planning (set/difference (set title-read-this-year)
-                              (set title-added-this-year))]
+                                 (set title-added-this-year))]
     {:all                  (map #(merge (select-keys %1 [:book-cover]) (select-keys (:book %1) [:title])) read-this-year)
      :top-5-longest        (get-top-5-biggest sorted-by-page-count)
+     :average-pages        (format "%.2f"
+                                   (float (/ (reduce + (map #(Integer/parseInt (get-in % [:book :num_pages])) sorted-by-page-count))
+                                             (count read-this-year))))
      :discovered-this-year {:name "Discovered this year" :count (count discovered-this-year) :data discovered-this-year}
      :planning             {:name "Planning on reading" :count (count planning) :data planning}
      :bottom-5-longest     (get-top-5-smallest sorted-by-page-count)
      :top-5-fastest        (get-top-5-fastest sorted-by-read-time)
+     :rating-by-page-count (books-with-review-and-page-count read-this-year)
      :bottom-5-fastest     (get-top-5-slowest sorted-by-read-time)
      :by-month             (books-by-month read-this-year)
+     :average-by-month     (format "%.2f" (float (/ (reduce + (map #(count (:books %)) (books-by-month read-this-year))) 12)))
      :by-read-time         (books-grouped-by-read-time sorted-by-read-time)}))
 
 (defn do-stats
   [user consumer token]
-  (let [books (books/get-user-books user consumer token)
-        read-this-year (books-read-this-year books)
-        with-extra-data (books-with-extra-data read-this-year)]
-    {:book-stats (do-book-stats with-extra-data books)
-     :author-stats (do-author-stats books)
-     :genre-stats (do-genre-stats with-extra-data)}
-    ))
+  (time (let [books (books/get-user-books user consumer token)
+              read-this-year (books-read-this-year books)
+              with-extra-data (books-with-extra-data read-this-year)]
+          {:book-stats   (do-book-stats with-extra-data books)
+           :author-stats (do-author-stats books)
+           :genre-stats  (do-genre-stats with-extra-data)}
+          )))
 
-
+;; Setup Environment
 (comment
-  "Setup environment"
   (do
     (:require '[oauth.client :as oauth])
     (def user (System/getenv "USER_ID"))

@@ -4,6 +4,7 @@
  :nrepl        {:port 55555}
  :deps         {:aliases [:cljs]}
  :dependencies []
+
  :builds       {
                 :app {:target     :browser
                       :output-dir "public/scripts/"

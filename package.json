@@ -6,8 +6,17 @@
     "shadow-cljs": "2.11.8"
   },
   "dependencies": {
-    "react": "16.0.0",
-    "react-dom": "16.0.0",
-    "recharts": "^1.8.5"
+    "@weknow/react-bubble-chart-d3": "file:../react-bubble-chart-d3",
+    "core-js": "^2.6.10",
+    "d3": "^4.13.0",
+    "d3-scale-chromatic": "^2.0.0",
+    "react": "16.13.1",
+    "react-dom": "16.13.1",
+    "react-image-show": "^0.3.4",
+    "react-path-marker": "^1.0.8",
+    "react-path-tooltip": "^1.0.8",
+    "react-svg-worldmap": "file:../react-svg-worldmap/",
+    "recharts": "^1.8.5",
+    "scheduler": "^0.20.1"
   }
 }

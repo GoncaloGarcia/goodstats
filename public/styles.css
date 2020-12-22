@@ -1,0 +1,3 @@
+.recharts-wrapper svg{
+    overflow: inherit !important;
+}

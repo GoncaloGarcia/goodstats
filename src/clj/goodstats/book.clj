@@ -1,6 +1,6 @@
 (ns goodstats.book
   (:require [net.cgrand.enlive-html :as html]
-            [clj-http.client :as client]
+            [org.httpkit.client :as http]
             [clojure.string :as strings]))
 
 
@@ -22,7 +22,10 @@
 
 
 (defn get-books-with-extra-data
-  [url]
-  (let [html (:body (client/get url))]
-    {:book-genres (get-book-genres html)
-     :book-cover  (get-book-cover html)}))
+  [urls]
+  (let [promises (doall (map http/get urls))
+        results (doall (map deref promises))]
+    (->> results
+         (map :body)
+         (map (fn [book] {:book-genres (get-book-genres book)
+                          :book-cover  (get-book-cover book)})))))
