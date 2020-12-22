@@ -58,9 +58,14 @@
 (defn average
   [data]
   (let [avg (get-in data [:book-stats :average-pages])]
-    [:div {:class "vh-100 w-100 bg-black pa5"}
-     [:h1 {:class "f-headline-ns f1 lh-title tracked-tight tc lh-solid b v-mid light-red"}
-      (str "Each book had an average of " avg " pages")]]))
+    [:div {:class "vh-100 w-100 bg-black pa5 "}
+     [:div {:class "w-100 h-25"}]
+     [:div {:class "w-100 h-50"}
+
+      [:h1 {:class "f-headline-ns f1 lh-title tracked-tight tc lh-solid b v-mid light-red"}
+       (str "Each book had an average of " avg " pages")]
+      [:div {:class "w-100 h-25"}]
+      ]]))
 
 (defn longest-books
   [data]
@@ -89,7 +94,7 @@
   (let [books (get-in data [:book-stats :bottom-5-longest])
         max (last (map :num_pages books))]
     [:div {:class "vh-100 bg-navy pa3"}
-     [:div {:class "fl w-60-ns w-100 h-100-ns h-75 pa3 flex items-center"}
+     [:div {:class "fl w-60-ns w-100 h-100-ns h-75 pa3 "}
       [ResponsiveContainer {:width "95%" :height "100%"}
        [BarChart {:layout "vertical" :width 800 :height 500 :data books}
         [YAxis {:padding #js {:left 10} :type "category" :stroke "#19A974" :dataKey "title"}]
@@ -111,9 +116,12 @@
   [data]
   (let [avg (get-in data [:book-stats :average-by-month])]
     [:div {:class "vh-100 w-100 bg-navy pa5"}
-     [:div {:class "fl w-100 h-100"}
-      [:h1 {:class "f-headline-ns f1 lh-title tracked-tight tc v-mid lh-solid b gold"}
-       (str "You've read " avg " books per month")]]]))
+     [:div {:class "fl w-100 h-100 "}
+      [:div {:class "w-100 h-25"}]
+      [:div {:class "w-100 h-50"}
+       [:h1 {:class "f-headline-ns f1 lh-title tracked-tight tc v-mid lh-solid b gold"}
+        (str "You've read " avg " books per month")]]
+      [:div {:class "w-100 h-25"}]]]))
 
 (defn books-by-month
   [data]
@@ -281,7 +289,7 @@
     [WorldMap {:color                "#FBF1A9" :value-prefix "-" :fillOpacity 1
                :frame                false :size "xl" :data (filter #(not (nil? (:country %))) (get-in data [:author-stats :country]))
                :backgroundColor      "#137752" :borderColor "#FBF1A9"
-               :defaultStrokeOpacity 1
+               :strokeOpacity 1
                :styleFunction        (fn [context]
                                        #js {:strokeOpacity 1
                                             :strokeWidth   1
@@ -294,9 +302,13 @@
 (defn all-authors
   [data]
   (let [authors (get-in data [:author-stats :all])]
-    [:div {:class "vh-100 w-100 bg-dark-gray pa2"}
-     [:h1 {:class "f-headline tracked-tight tc lh-solid b v-btm washed-green"}
-      (str "In 2020 you've read " (count authors) " authors")]]))
+    [:div {:class "vh-100 w-100 bg-dark-gray pa2 "}
+     [:div {:class "w-100 h-25"}]
+     [:div {:class "w-100"}
+      [:h1 {:class "f-headline tracked-tight tc lh-solid b v-btm washed-green"}
+       (str "In 2020 you've read " (count authors) " authors")]]
+     [:div {:class "w-100 h-25"}]
+     ]))
 
 (defn genres-map-2
   [data]
@@ -321,9 +333,12 @@
 
 (defn the-end
   []
-  [:div {:class "vh-100 w-100 bg-light-green pa2"}
-   [:h1 {:class "f-headline tracked-tight tc lh-solid b v-btm dark-green"}
-    "That's all for this year. We'll see you in 2021!"]])
+  [:div {:class "vh-100 w-100 bg-light-green pa2 "}
+   [:div {:class "w-100 h-25"}]
+   [:div {:class "w-100"}
+    [:h1 {:class "f-headline tracked-tight tc lh-solid b v-btm washed-green"}
+     "That's all for this year. See you in 2021!"]]
+   [:div {:class "w-100 h-25"}]])
 
 
 (defn statistics-component [books]

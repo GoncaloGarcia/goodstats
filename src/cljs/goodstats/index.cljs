@@ -13,33 +13,35 @@
 (defonce match (ratom/atom nil))
 
 (defn current-page []
-  [:div
-   (if (not-empty (get local-storage :reading-review-data {}))
-     [stats/statistics-component @match]
-     (if @match
-       (let [view (:view (:data @match))]
-         [view @match])))
-   ])
+  []
+  (if (not-empty (get local-storage :reading-review-data {}))
+    [stats/statistics-component @match]
+    (if @match
+      (let [view (:view (:data @match))]
+        [view @match])
+      [:div {:class "vh-100 w-100 h-100 bg-gold pa2 center flex items-center"}
+       [:div {:class "flex-column"}
+        [:h1 {:class "f-headline-ns f1 lh-title tracked-tight tc lh-solid b v-mid near-black"}
+         "Welcome to your 2020 Reading Review"]
+        [:h1 {:styles #js {:cursor "pointer"} :class "underline link dim f3s lh-title tracked-tight lh-solid b v-mid near-black tc" :onClick oauth/login-goodreads}
+         "Log-in with Goodreads"]]])))
 
 (defn loading-component [match]
   (let [id (get-in match [:parameters :query :oauth_token])]
-    (ajax/ajax-request {:uri             (str "http://localhost:8080/user/" id "/stats")
+    (ajax/ajax-request {:uri             (str "http://134.122.9.217/user/" id "/stats")
                         :method          :get
                         :format          (ajax/json-request-format)
                         :response-format (ajax/json-response-format {:keywords? true})
                         :handler         (fn [response] (do
-                                                          (assoc! local-storage :reading-review-data-2 "A")
                                                           (assoc! local-storage :reading-review-data (second response))
-                                                          ;(reset! state/books (second response))
                                                           (rfe/push-state ::results)))})
-    [:div "Loading"]))
+    [:div {:class "vh-100 w-100 h-100 bg-gold pa2 flex items-center"}
+     [:h1 {:class "f-headline-ns f1 lh-title tracked-tight tc lh-solid b v-mid near-black"}
+      (str "Please wait while our team of librarians processes your data")]]))
 
 
 (def routes
-  [["/login"
-    {:name ::stats
-     :view oauth/redirect-to-goodreads-component}]
-   ["/loading"
+  [["/loading"
     {:name ::load
      :view loading-component}]
    ["/results"

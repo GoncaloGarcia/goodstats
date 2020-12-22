@@ -1,3 +1,7 @@
 .recharts-wrapper svg{
     overflow: inherit !important;
 }
+
+.link {
+    cursor: pointer;
+}

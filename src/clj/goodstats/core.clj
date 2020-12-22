@@ -4,6 +4,7 @@
             [goodstats.oauth :as oauth]
             [compojure.route :as route]
             [goodstats.stats :as stats]
+            [taoensso.timbre :as timbre :refer [info]]
             [ring.middleware.json :refer [wrap-json-response]]
             [ring.middleware.cors :refer [wrap-cors]]
             [org.httpkit.server :as server]
@@ -55,9 +56,10 @@
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (do
-    (println "Starting HTTP server on port 8080")
-    (create-server 8080)))
+  (let [port (System/getenv "PORT")]
+    (do
+      (timbre/info (str "Starting HTTP server on port: " port))
+      (create-server (Integer/parseInt port)))))
 
 (comment
   "Example commands for REPL use"
