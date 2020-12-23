@@ -148,10 +148,8 @@
 
 (defn books-with-extra-data
   [books]
-  (as-> books b
-        (goodstats.book/get-books-with-extra-data (map #(get-in %1 [:book :link]) b))
-        (zipmap books b)
-        (map #(merge (key %) (val %)) b)))
+  (->> books
+       (pmap #(merge %1 (goodstats.book/get-books-with-extra-data (get-in %1 [:book :link]))))))
 
 
 (defn get-genres-by-frequency
@@ -228,6 +226,10 @@
            :author-stats (do-author-stats books)
            :genre-stats  (do-genre-stats with-extra-data)}
           )))
+
+
+
+
 
 ;; Setup Environment
 (comment

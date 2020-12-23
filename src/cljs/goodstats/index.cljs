@@ -28,7 +28,7 @@
 
 (defn loading-component [match]
   (let [id (get-in match [:parameters :query :oauth_token])]
-    (ajax/ajax-request {:uri             (str "http://134.122.9.217/user/" id "/stats")
+    (ajax/ajax-request {:uri             (str "http://localhost:8080/user/" id "/stats")
                         :method          :get
                         :format          (ajax/json-request-format)
                         :response-format (ajax/json-response-format {:keywords? true})

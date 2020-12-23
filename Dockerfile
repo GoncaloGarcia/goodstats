@@ -17,7 +17,5 @@ COPY build $APP_HOME/build
 
 RUN clojure -A:build -m package
 
-ENV CLIENT_ID
-ENV CLIENT_SECRET
 
-CMD ["/usr/bin/java", "-Xmx256m", "-cp", "target/classes:target/lib/lib/*", "goodstats.core"]
+CMD ["/usr/bin/java", "-Xmx768m", "-XX:+UseParallelGC", "-cp", "target/classes:target/lib/lib/*", "goodstats.core"]
