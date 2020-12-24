@@ -1,6 +1,7 @@
 (ns goodstats.book
   (:require [net.cgrand.enlive-html :as html]
             [clj-http.client :as client]
+            [goodstats.cache :as cache]
             [clojure.string :as strings]))
 
 
@@ -23,6 +24,12 @@
 
 (defn get-books-with-extra-data
   [url]
-  (let [html (:body (client/get url))]
-    {:book-genres (get-book-genres html)
-     :book-cover  (get-book-cover html)}))
+  (let [cached (cache/fetch url)]
+    (if (not (nil? cached))
+      cached
+      (let [html (:body (client/get url))
+            result {:book-genres (get-book-genres html)
+                    :book-cover  (get-book-cover html)}]
+        (do
+          (cache/store url result)
+          result)))))

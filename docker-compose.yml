@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  readingreview:
+    build: .
+    links:
+      - redis
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - PORT
+      - API_KEY
+      - API_SECRET
+    ports:
+      - ${PORT}:${PORT}
+
+  redis:
+    image: redis:5.0.5

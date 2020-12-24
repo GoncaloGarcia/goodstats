@@ -6,7 +6,6 @@
     [reagent.ratom :as ratom]
     [hodgepodge.core :refer [local-storage]]
     [goodstats.stats :as stats]
-    [goodstats.state :as state]
     [goodstats.oauth :as oauth]
     [ajax.core :as ajax]))
 

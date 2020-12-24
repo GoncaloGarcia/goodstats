@@ -4,7 +4,6 @@
             [ajax.core :as ajax]
             [clojure.edn :as edn]
             [hodgepodge.core :refer [local-storage]]
-            [goodstats.state :as state]
             ["@weknow/react-bubble-chart-d3" :as BubbleChart]
             ["react-image-show" :default SlideShow]
             ["react-svg-worldmap" :refer (WorldMap)]
@@ -286,16 +285,16 @@
     [:h1 {:class "f-headline-ns f-subheadline tracked-tight lh-solid b v-top light-yellow tc"} "Your authors by country"]
     [:h1 {:class "f3 lh-solid tc georgia normal light-yellow"} "Hover to see the authors' names"]]
    [:div {:class "tc-l"}
-    [WorldMap {:color                "#FBF1A9" :value-prefix "-" :fillOpacity 1
-               :frame                false :size "xl" :data (filter #(not (nil? (:country %))) (get-in data [:author-stats :country]))
-               :backgroundColor      "#137752" :borderColor "#FBF1A9"
-               :strokeOpacity 1
-               :styleFunction        (fn [context]
-                                       #js {:strokeOpacity 1
-                                            :strokeWidth   1
-                                            :stroke        "#137752"
-                                            :fill          "#FBF1A9"
-                                            :fillOpacity   1})}]]
+    [WorldMap {:color           "#FBF1A9" :value-prefix "-" :fillOpacity 1
+               :frame           false :size "xl" :data (filter #(not (nil? (:country %))) (get-in data [:author-stats :country]))
+               :backgroundColor "#137752" :borderColor "#FBF1A9"
+               :strokeOpacity   1
+               :styleFunction   (fn [context]
+                                  #js {:strokeOpacity 1
+                                       :strokeWidth   1
+                                       :stroke        "#137752"
+                                       :fill          "#FBF1A9"
+                                       :fillOpacity   1})}]]
    ]
   )
 
@@ -343,7 +342,7 @@
 
 (defn statistics-component [books]
   (fn [] (let [books-data (get local-storage :reading-review-data {})]
-           [:div {:class " bg-black"}
+           [:div
             (all-books books-data)
             (genres-map-2 books-data)
             (planning-v-discovered books-data)

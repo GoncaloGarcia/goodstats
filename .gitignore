@@ -24,5 +24,6 @@ public/scripts
 .idea
 .lein-*
 .nrepl-*
-.DS_Store
+.DS_Stores
 .cpcache/
+.env

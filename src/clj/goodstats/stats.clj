@@ -4,6 +4,7 @@
             [clj-time.core :as t]
             [clojure.set :as set]
             [clojure.edn :as edn]
+            [goodstats.cache :as cache]
             [iso-country-codes.core :as codes]
             [goodstats.book :as book]
             [clojure.string :as string])
@@ -219,13 +220,19 @@
 
 (defn do-stats
   [user consumer token]
-  (time (let [books (books/get-user-books user consumer token)
+  (time
+    (let [cached (cache/fetch user)]
+      (if (not (nil? cached))
+        cached
+        (let [books (books/get-user-books user consumer token)
               read-this-year (books-read-this-year books)
-              with-extra-data (books-with-extra-data read-this-year)]
-          {:book-stats   (do-book-stats with-extra-data books)
-           :author-stats (do-author-stats books)
-           :genre-stats  (do-genre-stats with-extra-data)}
-          )))
+              with-extra-data (books-with-extra-data read-this-year)
+              result {:book-stats   (do-book-stats with-extra-data books)
+                      :author-stats (do-author-stats books)
+                      :genre-stats  (do-genre-stats with-extra-data)}]
+          (do
+            (cache/store user result)
+            result))))))
 
 
 
