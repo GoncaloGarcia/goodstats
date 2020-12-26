@@ -1,7 +1,7 @@
-(ns goodstats.book
+(ns goodstats.goodreads.book
   (:require [net.cgrand.enlive-html :as html]
             [clj-http.client :as client]
-            [goodstats.cache :as cache]
+            [goodstats.cache.client :as cache]
             [clojure.string :as strings]))
 
 

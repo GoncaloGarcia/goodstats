@@ -1,4 +1,4 @@
-(ns goodstats.parser)
+(ns goodstats.goodreads.parser)
 
 (defn get-request-content
   "Retrieves just the request content from the GoodreadsResponse"

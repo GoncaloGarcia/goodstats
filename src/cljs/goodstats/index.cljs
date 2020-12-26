@@ -27,13 +27,26 @@
 
 (defn loading-component [match]
   (let [id (get-in match [:parameters :query :oauth_token])]
-    (ajax/ajax-request {:uri             (str "http://localhost:8080/user/" id "/stats")
-                        :method          :get
+    (ajax/ajax-request {:uri             (str "http://134.122.9.217/user/" id "/stats")
+                        :method          :post
                         :format          (ajax/json-request-format)
                         :response-format (ajax/json-response-format {:keywords? true})
-                        :handler         (fn [response] (do
-                                                          (assoc! local-storage :reading-review-data (second response))
-                                                          (rfe/push-state ::results)))})
+                        :handler         (fn check [response]
+                                           (if (= "OK" (second response))
+                                             (ajax/ajax-request {:uri             (str " http://134.122.9.217/user/" id "/stats")
+                                                                 :method          :get
+                                                                 :format          (ajax/json-request-format)
+                                                                 :response-format (ajax/json-response-format {:keywords? true})
+                                                                 :handler         (fn [rsp]
+                                                                                    (println (empty? (second rsp)))
+                                                                                    (if-not (empty? (second rsp))
+                                                                                      (do
+                                                                                        (assoc! local-storage :reading-review-data (second rsp))
+                                                                                        (rfe/push-state ::results))
+                                                                                      (do
+                                                                                        (println "Trying again")
+                                                                                        (js/setTimeout #(check [true "OK"]) 10000))))})
+                                             ))})
     [:div {:class "vh-100 w-100 h-100 bg-gold pa2 flex items-center"}
      [:h1 {:class "f-headline-ns f1 lh-title tracked-tight tc lh-solid b v-mid near-black"}
       (str "Please wait while our team of librarians processes your data")]]))

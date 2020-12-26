@@ -1,0 +1,2 @@
+goodstats-web=Dockerfile-web
+goodstats-consumer=Dockerfile-consumer

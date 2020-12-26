@@ -4,4 +4,4 @@
 
 (defn -main []
       (bundle (make-out-path 'lib nil))
-      (c/compile 'goodstats.core {:compile-path "target/classes"}))
+      (c/compile '[goodstats.web.core goodstats.consumer.core] {:compile-path "target/classes"}))

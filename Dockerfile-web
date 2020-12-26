@@ -18,4 +18,4 @@ COPY build $APP_HOME/build
 RUN clojure -A:build -m package
 
 
-CMD ["/usr/bin/java", "-Xmx768m", "-XX:+UseParallelGC", "-cp", "target/classes:target/lib/lib/*", "goodstats.core"]
+CMD ["/usr/bin/java", "-Xmx768m", "-XX:+UseParallelGC", "-cp", "target/classes:target/lib/lib/*", "goodstats.web.core"]

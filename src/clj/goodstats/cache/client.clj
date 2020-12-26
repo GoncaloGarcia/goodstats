@@ -1,4 +1,4 @@
-(ns goodstats.cache
+(ns goodstats.cache.client
   (:require [taoensso.carmine :as carmine :refer [wcar]]))
 
 (defonce redis-connection {:pool {} :spec {:uri (System/getenv "REDIS_URL")}})

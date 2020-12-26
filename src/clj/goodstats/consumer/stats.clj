@@ -1,14 +1,15 @@
-(ns goodstats.stats
-  (:require [goodstats.shelf :as books]
+(ns goodstats.consumer.stats
+  (:require [goodstats.goodreads.shelf :as books]
             [clj-time.format :as f]
             [clj-time.core :as t]
             [clojure.set :as set]
             [clojure.edn :as edn]
-            [goodstats.cache :as cache]
+            [goodstats.cache.client :as cache]
             [iso-country-codes.core :as codes]
-            [goodstats.book :as book]
-            [clojure.string :as string])
-  (:import (clojure.lang LazySeq)))
+            [goodstats.goodreads.book :as book]
+            [clojure.string :as string]
+            [goodstats.oauth.client :as oauth]
+            [taoensso.timbre :as timbre]))
 
 (defn filter-empty-key
   [books key]
@@ -150,7 +151,7 @@
 (defn books-with-extra-data
   [books]
   (->> books
-       (pmap #(merge %1 (goodstats.book/get-books-with-extra-data (get-in %1 [:book :link]))))))
+       (pmap #(merge %1 (book/get-books-with-extra-data (get-in %1 [:book :link]))))))
 
 
 (defn get-genres-by-frequency
@@ -179,12 +180,10 @@
         authors-read-this-year (books/get-books-by-author read-this-year)
         authors (books/get-books-by-author books)
         with-count (authors-with-review-count-and-score authors-read-this-year)
-        grouped-by-country (authors-grouped-by-country authors-read-this-year)
-        ]
+        grouped-by-country (authors-grouped-by-country authors-read-this-year)]
     {:all      authors-read-this-year
      :favorite with-count
-     :country  grouped-by-country
-     }))
+     :country  grouped-by-country}))
 
 (defn do-genre-stats
   "Returns the entire set of stats for books"
@@ -194,13 +193,11 @@
 (defn do-book-stats
   "Returns the entire set of stats for books"
   [read-this-year books]
-  (let [
-        title-added-this-year (map #(get-in % [:book :title]) (books/get-this-years-books books))
+  (let [title-added-this-year (map #(get-in % [:book :title]) (books/get-this-years-books books))
         title-read-this-year (map #(get-in % [:book :title]) read-this-year)
         sorted-by-page-count (books-sorted-by-page-count read-this-year)
         sorted-by-read-time (books-sorted-by-read-time read-this-year)
-        discovered-this-year (set/intersection (set title-read-this-year)
-                                               (set title-added-this-year))
+        discovered-this-year (set/intersection (set title-read-this-year) (set title-added-this-year))
         planning (set/difference (set title-read-this-year)
                                  (set title-added-this-year))]
     {:all                  (map #(merge (select-keys %1 [:book-cover]) (select-keys (:book %1) [:title])) read-this-year)
@@ -221,18 +218,25 @@
 (defn do-stats
   [user consumer token]
   (time
-    (let [cached (cache/fetch user)]
-      (if (not (nil? cached))
-        cached
-        (let [books (books/get-user-books user consumer token)
-              read-this-year (books-read-this-year books)
-              with-extra-data (books-with-extra-data read-this-year)
-              result {:book-stats   (do-book-stats with-extra-data books)
-                      :author-stats (do-author-stats books)
-                      :genre-stats  (do-genre-stats with-extra-data)}]
-          (do
-            (cache/store user result)
-            result))))))
+    (let [books (books/get-user-books user consumer token)
+          read-this-year (books-read-this-year books)
+          with-extra-data (books-with-extra-data read-this-year)
+          result {:book-stats   (do-book-stats with-extra-data books)
+                  :author-stats (do-author-stats books)
+                  :genre-stats  (do-genre-stats with-extra-data)}]
+      result)))
+
+(defn handle-message
+  [ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
+  (let [id (String. payload "UTF-8")
+        access-token (do
+                       (timbre/info (str "Received AMQP message: " id))
+                       (oauth/get-access-token id))
+        auth-user-id (do
+                       (timbre/info (str "Oauth token: " access-token))
+                       (oauth/get-auth-user-id id access-token))]
+    (timbre/info (str "Received message for user: " auth-user-id))
+    (cache/store (str "result-" auth-user-id) (do-stats auth-user-id oauth/oauth-client access-token))))
 
 
 

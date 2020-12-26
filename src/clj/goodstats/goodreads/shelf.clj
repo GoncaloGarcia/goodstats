@@ -1,8 +1,8 @@
-(ns goodstats.shelf
+(ns goodstats.goodreads.shelf
   (:require [clojure.data.xml :as data]
             [clj-http.client :as client]
-            [goodstats.parser :as parser]
-            [goodstats.authors :as authors]
+            [goodstats.goodreads.parser :as parser]
+            [goodstats.goodreads.authors :as authors]
             [clj-time.format :as f]
             [clj-time.coerce :as c]
             [clj-time.core :as t]

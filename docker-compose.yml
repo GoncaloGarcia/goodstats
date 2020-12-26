@@ -1,17 +1,38 @@
 version: "3"
 
 services:
-  readingreview:
-    build: .
-    links:
+  readingreview-web:
+    build:
+      context: .
+      dockerfile: Dockerfile-web
+    depends_on:
       - redis
+      - rabbitmq
     environment:
-      - REDIS_URL=redis://redis:6379
-      - PORT
-      - API_KEY
-      - API_SECRET
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/%2F
+      PORT: ${PORT}
+      API_KEY: ${API_KEY}
+      API_SECRET: ${API_SECRET}
     ports:
       - ${PORT}:${PORT}
 
+  readingreview-consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile-consumer
+    depends_on:
+      - redis
+      - rabbitmq
+    environment:
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/%2F
+      API_KEY: ${API_KEY}
+      API_SECRET: ${API_SECRET}
+
   redis:
     image: redis:5.0.5
+
+  rabbitmq:
+    image: rabbitmq:3.6
+

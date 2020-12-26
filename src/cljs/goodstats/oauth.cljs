@@ -4,7 +4,7 @@
 
 (defn login-goodreads
   []
-  (ajax/ajax-request {:uri             "http://localhost:8080/auth"
+  (ajax/ajax-request {:uri             "http://134.122.9.217/auth"
                       :method          :get
                       :format          (ajax/json-request-format)
                       :response-format (ajax/json-response-format {:keywords? true})
