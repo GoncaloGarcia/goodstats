@@ -4,7 +4,6 @@
             [langohr.queue :as queue]
             [langohr.consumers :as consumers]
             [taoensso.timbre :as timbre]
-            [goodstats.pool.pool :as pool]
             [com.climate.claypoole :as cp])
   (:import (java.util.concurrent Executors)))
 
@@ -14,9 +13,11 @@
 
 (defn init
   [f]
-  (let [conn (rabbit/connect {:uri      (System/getenv "RABBITMQ_URL")
-                              :executor (Executors/newFixedThreadPool (* 2 (cp/ncpus)))})]
-    (for [i (range 0 (* 2 (cp/ncpus)))]
+  (let [num_threads (Integer/parseInt (System/getenv "NUM_THREADS"))
+        conn (rabbit/connect {:uri      (System/getenv "RABBITMQ_URL")
+                              :executor (Executors/newFixedThreadPool num_threads)})]
+
+    (doseq [i (range 0 num_threads)]
       (let [chnl (channel/open conn)
             queue-name "goodstats.queue"]
         (timbre/info "Starting AMQP subscriber: " i " at: " (System/getenv "RABBITMQ_URL"))

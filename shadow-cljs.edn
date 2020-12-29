@@ -9,5 +9,5 @@
                 :app {:target     :browser
                       :output-dir "public/scripts/"
                       :asset-path "/scripts"
-                      :release {:closure-defines {goodstats.constants/SERVER_ADDR "http://134.122.9.217:3928"}}
+                      :release {:closure-defines {goodstats.constants/SERVER_ADDR "http://134.122.11.117:3928"}}
                       :modules    {:core {:init-fn goodstats.index/init!}}}}}

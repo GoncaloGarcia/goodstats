@@ -7,7 +7,5 @@
 
 (defn -main
   []
-  (let [function (if (= "test" (System/getenv "PROFILE"))
-                   stats/handle-message-test
-                   stats/handle-message)]
-    (subscriber/init function)))
+  (timbre/info "Starting Goodstats consumer")
+  (subscriber/init stats/handle-message))

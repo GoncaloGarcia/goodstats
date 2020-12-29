@@ -10,8 +10,7 @@
             [clojure.string :as string]
             [goodstats.oauth.client :as oauth]
             [taoensso.timbre :as timbre]
-            [com.climate.claypoole :as cp]
-            [goodstats.pool.pool :as pool]))
+            [com.climate.claypoole :as cp]))
 
 
 (defn filter-empty-key
@@ -153,9 +152,11 @@
   )
 
 (defn books-with-extra-data
-  [books]
-  (->> books
-       (cp/upmap pool/thread-pool #(merge %1 (book/get-books-with-extra-data (string/trim (get-in %1 [:book :link])))))))
+  [read-this-year]
+  (as-> read-this-year b
+        (book/get-books-with-extra-data (map #(get-in %1 [:book :link]) b))
+        (zipmap read-this-year b)
+        (map #(merge (key %) (val %)) b)))
 
 
 (defn get-genres-by-frequency
@@ -179,10 +180,8 @@
   [books]
   "Returns the entire set of stats for authors"
   (let [
-        added-this-year (books/get-this-years-books books)
         read-this-year (books-read-this-year books)
         authors-read-this-year (books/get-books-by-author read-this-year)
-        authors (books/get-books-by-author books)
         with-count (authors-with-review-count-and-score authors-read-this-year)
         grouped-by-country (authors-grouped-by-country authors-read-this-year)]
     {:all      authors-read-this-year
@@ -269,4 +268,8 @@
                                               "https://www.goodreads.com/oauth/request_token"
                                               "https://www.goodreads.com/oauth/access_token"
                                               "https://www.goodreads.com/oauth/authorize"
-                                              :hmac-sha1))))
+                                              :hmac-sha1)))
+  (do
+    (def books (books/get-user-books user consumer token))
+    (def read-this-year (books-read-this-year books)))
+  )

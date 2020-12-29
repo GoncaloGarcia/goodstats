@@ -9,8 +9,7 @@
             [clj-time.local :as l]
             [oauth.client :as oauth]
             [clojure.tools.reader.edn :as edn]
-            [com.climate.claypoole :as cp]
-            [goodstats.pool.pool :as pool]))
+            [com.climate.claypoole :as cp]))
 
 (defn get-shelf-books-response
   "Retrieves Goodreads Shelf data by id and returns
@@ -88,16 +87,19 @@
   "Returns the books grouped by author id"
   [books]
   (let [books-with-authors (filter #(> (count (get-in %1 [:book :authors])) 0) books)]
-    (->> books-with-authors
-         (flatten-author-and-book)
-         (map #(select-keys %1 [:rating :author-link :author-id :author-name :author-image_url :title_without_series]))
-         (group-by :author-id)
-         (map #(combine-author-books (val %1)))
-         (cp/upmap pool/thread-pool #(merge %1 {:country (authors/get-author-country (:author-link %1))}))
-         (map #(merge %1 (let [elements (map edn/read-string (flatten (list (:rating %1))))
-                               avg (/ (reduce + elements) (count elements))]
-                           {:avg-rating avg})))
-         )))
+    (as-> books-with-authors b
+          (flatten-author-and-book b)
+          (map #(select-keys %1 [:rating :author-link :author-id :author-name :author-image_url :title]) b)
+          (group-by :author-id b)
+          (map #(combine-author-books (val %1)) b)
+          (let [all b
+                all-countries (map #(hash-map :country %)
+                                   (authors/get-author-country (map :author-link all)))]
+            (map #(merge (key %) (val %)) (zipmap b all-countries)))
+          (map #(merge %1 (let [elements (map edn/read-string (flatten (list (:rating %1))))
+                                avg (/ (reduce + elements) (count elements))]
+                            {:avg-rating avg})) b)
+          )))
 
 (defn get-this-years-books
   "Returns the books added this year"

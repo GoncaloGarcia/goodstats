@@ -28,9 +28,11 @@ services:
     environment:
       REDIS_URL: redis://redis:6379
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/%2F
+      GOODREADS_URL: https://www.goodreads.com
       API_KEY: ${API_KEY}
       API_SECRET: ${API_SECRET}
       PROFILE: ${PROFILE}
+      NUM_THREADS: 4
 
   readingreview-mock-server:
     build:
