@@ -9,7 +9,10 @@
             [goodstats.goodreads.book :as book]
             [clojure.string :as string]
             [goodstats.oauth.client :as oauth]
-            [taoensso.timbre :as timbre]))
+            [taoensso.timbre :as timbre]
+            [com.climate.claypoole :as cp]
+            [goodstats.pool.pool :as pool]))
+
 
 (defn filter-empty-key
   [books key]
@@ -26,12 +29,12 @@
 (defn get-top-5-biggest
   "Returns the 5 largest books from the list provided as argument"
   [books]
-  (reverse (map #(select-keys (%1 :book) [:title :num_pages]) (take-last 5 books))))
+  (reverse (map #(select-keys (%1 :book) [:title_without_series :num_pages]) (take-last 5 books))))
 
 (defn get-top-5-smallest
   "Returns the 5 smallest books from the list provided as argument"
   [books]
-  (map #(select-keys (%1 :book) [:title :num_pages]) (take 5 books)))
+  (map #(select-keys (%1 :book) [:title_without_series :num_pages]) (take 5 books)))
 
 (defn books-sorted-by-read-time
   "Sorts the books by the time it took to read them"
@@ -51,7 +54,7 @@
   [books]
   (let [books-with-page-count (filter (fn [books] (= (type (get-in books [:book :num_pages])) java.lang.String)) books)]
     (map #(hash-map
-            :title (get-in % [:book :title])
+            :title (get-in % [:book :title_without_series])
             :rating (Integer/parseInt (:rating %))
             :pages (Integer/parseInt (get-in % [:book :num_pages])))
          books-with-page-count)))
@@ -62,7 +65,7 @@
        (reduce
          (fn [prev book]
            (let [read-time (:read-time-days book)
-                 title (get-in book [:book :title])
+                 title (get-in book [:book :title_without_series])
                  book-data {:read-time-days read-time :title title}]
              (cond
                (< read-time 7) (update-in prev [:1week :books] conj book-data)
@@ -87,14 +90,14 @@
   "Returns the 5 books read the fastest from the list provided as argument"
   [books]
   (map
-    #(assoc (select-keys (%1 :book) [:title]) :read-time-days (%1 :read-time-days))
+    #(assoc (select-keys (%1 :book) [:title_without_series]) :read-time-days (%1 :read-time-days))
     (take 5 books)))
 
 (defn get-top-5-slowest
   "Returns the 5 books read the slowest from the list provided as argument"
   [books]
   (reverse (map
-             #(assoc (select-keys (%1 :book) [:title]) :read-time-days (%1 :read-time-days))
+             #(assoc (select-keys (%1 :book) [:title_without_series]) :read-time-days (%1 :read-time-days))
              (take-last 5 books))))
 
 (defn authors-with-review-count-and-score
@@ -102,7 +105,7 @@
   (let [authors-with-reviews-and-score
         (map #(hash-map
                 :author (:author-name %)
-                :review-count (count (flatten (list (:title %))))
+                :review-count (count (flatten (list (:title_without_series %))))
                 :review-score (Float/parseFloat (format "%.2f" (float (:avg-rating %)))))
              authors)]
     authors-with-reviews-and-score))
@@ -126,11 +129,12 @@
 (defn books-by-month
   [read-this-year]
   (as-> read-this-year books
-        (map #(hash-map :read-at (:read_at %1) :title (get-in %1 [:book :title])) books)
+        (map #(hash-map :read-at (:read_at %1) :title (get-in %1 [:book :title_without_series])) books)
         (group-by #(second (string/split (:read-at %1) #" ")) books)
         (list ["Jan" (get books "Jan")]
               ["Feb" (get books "Feb")]
               ["Mar" (get books "Mar")]
+              ["Apr" (get books "Apr")]
               ["May" (get books "May")]
               ["Jun" (get books "Jun")]
               ["Jul" (get books "Jul")]
@@ -151,7 +155,7 @@
 (defn books-with-extra-data
   [books]
   (->> books
-       (pmap #(merge %1 (book/get-books-with-extra-data (get-in %1 [:book :link]))))))
+       (cp/upmap pool/thread-pool #(merge %1 (book/get-books-with-extra-data (string/trim (get-in %1 [:book :link])))))))
 
 
 (defn get-genres-by-frequency
@@ -193,14 +197,14 @@
 (defn do-book-stats
   "Returns the entire set of stats for books"
   [read-this-year books]
-  (let [title-added-this-year (map #(get-in % [:book :title]) (books/get-this-years-books books))
-        title-read-this-year (map #(get-in % [:book :title]) read-this-year)
+  (let [title-added-this-year (map #(get-in % [:book :title_without_series]) (books/get-this-years-books books))
+        title-read-this-year (map #(get-in % [:book :title_without_series]) read-this-year)
         sorted-by-page-count (books-sorted-by-page-count read-this-year)
         sorted-by-read-time (books-sorted-by-read-time read-this-year)
         discovered-this-year (set/intersection (set title-read-this-year) (set title-added-this-year))
         planning (set/difference (set title-read-this-year)
                                  (set title-added-this-year))]
-    {:all                  (map #(merge (select-keys %1 [:book-cover]) (select-keys (:book %1) [:title])) read-this-year)
+    {:all                  (map #(merge (select-keys %1 [:book-cover]) (select-keys (:book %1) [:title_without_series])) read-this-year)
      :top-5-longest        (get-top-5-biggest sorted-by-page-count)
      :average-pages        (format "%.2f"
                                    (float (/ (reduce + (map #(Integer/parseInt (get-in % [:book :num_pages])) sorted-by-page-count))
@@ -238,7 +242,19 @@
     (timbre/info (str "Received message for user: " auth-user-id))
     (cache/store (str "result-" auth-user-id) (do-stats auth-user-id oauth/oauth-client access-token))))
 
-
+(defn handle-message-test
+  [ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
+  (let [id (String. payload "UTF-8")
+        access-token (do
+                       (timbre/info (str "Received AMQP message after: " (- (System/currentTimeMillis) (Long/parseLong id))))
+                        "ABC")
+        auth-user-id (do
+                       (timbre/info (str "Oauth token: " access-token))
+                       "ABC")]
+    (timbre/info (str "Received message for user: " auth-user-id))
+    (cache/store (str "result-" auth-user-id) (let [value (do-stats auth-user-id oauth/oauth-client access-token)]
+                                                (timbre/info "Processed after: " (- (System/currentTimeMillis) (Long/parseLong id)))
+                                                value))))
 
 
 

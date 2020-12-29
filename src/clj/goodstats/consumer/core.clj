@@ -7,4 +7,7 @@
 
 (defn -main
   []
-  (subscriber/init stats/handle-message))
+  (let [function (if (= "test" (System/getenv "PROFILE"))
+                   stats/handle-message-test
+                   stats/handle-message)]
+    (subscriber/init function)))

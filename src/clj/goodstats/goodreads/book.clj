@@ -2,7 +2,8 @@
   (:require [net.cgrand.enlive-html :as html]
             [clj-http.client :as client]
             [goodstats.cache.client :as cache]
-            [clojure.string :as strings]))
+            [clojure.string :as strings]
+            [taoensso.timbre :as timbre]))
 
 
 
@@ -27,9 +28,11 @@
   (let [cached (cache/fetch url)]
     (if (not (nil? cached))
       cached
-      (let [html (:body (client/get url))
-            result {:book-genres (get-book-genres html)
-                    :book-cover  (get-book-cover html)}]
-        (do
-          (cache/store url result)
-          result)))))
+      (do
+        (timbre/info "Fetching book: " url)
+        (let [html (:body (client/get url))
+              result {:book-genres (get-book-genres html)
+                      :book-cover  (get-book-cover html)}]
+          (do
+            (cache/store url result)
+            result))))))

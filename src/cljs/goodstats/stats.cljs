@@ -1,14 +1,17 @@
 (ns goodstats.stats
-  (:require [reagent.ratom :as ratom]
-            [reagent.core :as reagent]
-            [ajax.core :as ajax]
-            [clojure.edn :as edn]
-            [hodgepodge.core :refer [local-storage]]
-            ["@weknow/react-bubble-chart-d3" :as BubbleChart]
-            ["react-image-show" :default SlideShow]
-            ["react-svg-worldmap" :refer (WorldMap)]
-            ["recharts" :as recharts]
-            [clojure.string :as string]))
+  (:require
+    [reagent.ratom :as ratom]
+    [reagent.core :as reagent]
+    [ajax.core :as ajax]
+    [clojure.edn :as edn]
+    [hodgepodge.core :refer [local-storage]]
+    [clojure.string :as string]
+    ["@weknow/react-bubble-chart-d3" :as BubbleChart]
+    ["react-image-show" :default SlideShow]
+    ["react-svg-worldmap" :refer (WorldMap)]
+    ["recharts" :as recharts]
+    [clojure.string :as str]))
+
 
 (def WorldMap (reagent/adapt-react-class WorldMap))
 (def ReactBubbleChart (reagent/adapt-react-class BubbleChart))
@@ -39,7 +42,9 @@
 (def Area (reagent/adapt-react-class recharts/Area))
 (def Pie (reagent/adapt-react-class recharts/Pie))
 
-
+(defn is-portrait
+  []
+  (> (. js/window -innerHeight) (. js/window -innerWidth)))
 
 (defn all-books
   [data]
@@ -70,6 +75,7 @@
   [data]
   (let [books (get-in data [:book-stats :top-5-longest])
         largest (first (map #(edn/read-string (:num_pages %1)) books))]
+    (println books)
     [:div {:class "vh-100 bg-green pa3 cf items-center"}
      [:div {:class "fl w-100 w-40-ns h-75-ns h-25"}
       [:h1 {:class "f-headline-ns f1 tracked-tight lh-solid b v-top black"}
@@ -78,14 +84,15 @@
        [:h1 {:class "f3-ns f4 lh-solid tc georgia normal black"}
         "Oh Lawd They Comin'"]]]
      [:div {:class "fl w-60-ns w-100 h-100-ns h-75 flex pa items-center"}
-      [ResponsiveContainer {:width "100%" :height "100%"}
+      [ResponsiveContainer {:width "100%" :height (if (is-portrait) "75%" "95%")}
        [BarChart {:width 800 :height 500 :data books}
-        [XAxis {:stroke "black" :dataKey "title"}]
+        [XAxis {:stroke "black" :dataKey "title" :tick false}]
         [YAxis {:width 40 :stroke "black " :scale "linear" :orientation "left" :type "number" :domain #js [0, largest]}]
         [CartesianGrid {:stroke "black" :strokeDasharray '(3 7)}]
         [Legend]
         [Tooltip]
-        [Bar {:name "Number of Pages" :dataKey "num_pages" :fill "#00000"}]]]]]))
+        [Bar {:name "Number of Pages" :dataKey "num_pages" :fill "#00000"}
+         [LabelList {:dataKey "title_without_series" :position "top" :formatter (fn [arg] (first (str/split arg #":")))}]]]]]]))
 
 
 (defn shortest-books
@@ -96,7 +103,7 @@
      [:div {:class "fl w-60-ns w-100 h-100-ns h-75 pa3 "}
       [ResponsiveContainer {:width "95%" :height "100%"}
        [BarChart {:layout "vertical" :width 800 :height 500 :data books}
-        [YAxis {:padding #js {:left 10} :type "category" :stroke "#19A974" :dataKey "title"}]
+        [YAxis {:padding #js {:left 10} :type "category" :stroke "#19A974" :dataKey "title_without_series"}]
         [CartesianGrid {:stroke "#19A974" :strokeDasharray '(3 7)}]
         [XAxis {:stroke "#19A974" :scale "linear" :type "number" :domain #js [0, max]}]
         [Legend {:formatter (fn [value entry index]
@@ -142,8 +149,7 @@
 (defn books-by-read-count
   [data]
   (let [data (get-in data [:book-stats :by-read-time])
-        max (max (map :count data))
-        height (js/window.matchMedia "--breakpoint-not-small")]
+        max (max (map :count data))]
     [:div {:class "vh-100 vh-25 bg-blue pa3 center"}
      [:div {:class "vh-25 "}
       [:h1 {:class "f-headline-ns f1 tracked-tight lh-solid b v-top washed-red tc"} "Your reading speed breakdown"]]
@@ -153,7 +159,7 @@
                         :outerRadius "100%" :innerRadius "10%" :startAngle 180 :endAngle 0}
         [PolarAngleAxis {:tick false :type "number" :domain #js [0 max] :dataKey "count" :angleAxisId 0}]
         [RadialBar {:dataKey "count" :minAngle 5 :label #js {:fill "#FFDFDF"} :background #js {:fill "#FFDFDF"} :angleAxisId 0}]
-        [Legend {:verticalAlign "middle"
+        [Legend {:verticalAlign (if (is-portrait) "top" "middle")
                  :wrapperStyle  #js {:paddingTop "5%"}
                  :formatter     (fn [value entry index]
                                   (reagent/as-element [:span {:style {:color "#FFDFDF"}} (. entry -value)]))
@@ -168,12 +174,13 @@
    [:div {:class "fl w-60-ns w-100 h-100-ns h-75 pa "}
     [ResponsiveContainer {:width "100%" :height "100%"}
      [BarChart {:width 800 :height 300 :data (get-in data [:book-stats :top-5-fastest])}
-      [XAxis {:stroke "#111111" :dataKey "title"}]
+      [XAxis {:tick false :stroke "#111111" :dataKey "title"}]
       [YAxis {:width 20 :stroke "#111111"}]
       [CartesianGrid {:stroke "#111111" :strokeDasharray '(3 7)}]
       [Tooltip]
       [Legend]
-      [Bar {:dataKey "read-time-days" :fill "#111111" :name "Time to read (days)"}]]]]])
+      [Bar {:dataKey "read-time-days" :fill "#111111" :name "Time to read (days)"}
+       [LabelList {:dataKey "title_without_series" :position "top" :formatter (fn [arg] (first (str/split arg #":")))}]]]]]])
 
 (defn slowest-books
   [data]
@@ -189,7 +196,7 @@
      [:div {:class "fl w-60-ns w-100 h-100-ns h-75 pa"}
       [ResponsiveContainer {:width "100%" :height "100%"}
        [BarChart {:layout "vertical" :width 800 :height 500 :data books}
-        [YAxis {:orientation "right" :type "category" :stroke "#357EDD" :dataKey "title"}]
+        [YAxis {:orientation "right" :type "category" :stroke "#357EDD" :dataKey "title_without_series"}]
         [CartesianGrid {:stroke "#357EDD" :strokeDasharray '(3 7)}]
         [XAxis {:stroke "#357EDD" :scale "linear" :type "number" :domain #js [0, max]}]
         [Legend {:formatter (fn [value entry index]
@@ -198,6 +205,27 @@
         [Bar {:name "Read time (days)" :dataKey "read-time-days" :fill "#357EDD"}]
         ]]]]))
 
+;
+
+(defn render-custom-label
+  [arg]
+  (let [{:keys [cx cy midAngle innerRadius outerRadius name count]} (js->clj arg :keywordize-keys true)
+        radian (/ Math/PI 180)
+        radius (* 0.5 (+ innerRadius (- outerRadius innerRadius)))
+        x (+ cx (* radius (Math/cos (* (- midAngle) radian))))
+        y (+ cy (* radius (Math/sin (* (- midAngle) radian))))]
+    (reagent/as-element
+      [:text {:x                x
+              :y                y
+              :fill             "#FF725C"
+              :textAnchor       (if (> x cx) "start" "end")
+              :dominantBaseline "central"}
+       (str count (if (= name "Planning on reading")
+                    " planned"
+                    " discovered"))])))
+
+
+
 (defn planning-v-discovered
   [data]
   (let [planning (get-in data [:book-stats :planning])
@@ -205,27 +233,29 @@
         all (list planning discovered)]
     [:div {:class "vh-100 bg-light-red pa3"}
      [:div {:class "fl w-100 h-25"}
-      [:h1 {:class "f-headline-ns f1 tracked-tight lh-solid b v-top navy tr"}
+      [:h1 {:class "f-headline-ns f1 tracked-tight lh-solid b v-top navy tl"}
        "Are you spontaneous or a planner?"]]
      [:div {:class "fl w-100 h-75 pa"}
       [ResponsiveContainer {:width "100%" :height "100%"}
        [PieChart {:width 800 :height 500}
-        [Pie {:data    all :dataKey "count"
-              :nameKey "name" :outerRadius "90%" :innerRadius "30%" :fill "#001B44"
-              :label   (fn [entry] (str (. entry -name) ", " (. entry -value) " books"))
-              :stroke  "#FF725C"}]
-        ]]]
-     ]))
+        [Pie {:data      all :dataKey "count"
+              :nameKey   "name" :outerRadius "90%" :innerRadius "30%" :fill "#001B44"
+              :labelLine (if (is-portrait) false true)
+              :label     (if (is-portrait)
+                           render-custom-label
+                           (fn [entry] (str (. entry -name) ", " (. entry -value) " books")))
+              :stroke    "#FF725C"}
+         ]]]]]))
 
 (defn ratings-by-size
   [data]
   (let [books (get-in data [:book-stats :rating-by-page-count])]
     [:div {:class "vh-100 bg-gold pa3"}
      [:div {:class ""}
-      [:h1 {:class "f-headline tracked-tight lh-solid b v-top navy tr"}
+      [:h1 {:class "f-headline-ns f-subheadline tracked-tight lh-solid b v-top navy tr"}
        "Does size matter?"]]
      [:div {:class "fl w-100 h-50"}
-      [ResponsiveContainer {:width "100%" :height "120%"}
+      [ResponsiveContainer {:width "100%" :height (if (is-portrait) "100%" "120%")}
        [ScatterChart {:width 100 :height 100}
         [XAxis {:dataKey "pages" :stroke "#001B44" :name "Number of Pages" :unit " pages" :type "number"}]
         [YAxis {:width 30 :dataKey "rating" :stroke "#001B44" :name "Rating" :unit " stars" :type "number"
@@ -259,10 +289,10 @@
                                       elements)))
                         grouped-books)]
     [:div {:class "vh-100 bg-light-yellow pa3"}
-     [:div {:class "fl w-40-ns w-100 h-75-ns h-50"}
-      [:h1 {:class "f-headline-ns f-subheadline tracked-tight lh-solid b v-top dark-gray tl"}
+     [:div {:class "fl w-40-ns w-100 h-75-ns h-25"}
+      [:h1 {:class "f-headline-ns f1 tracked-tight lh-solid b v-top dark-gray tl"}
        "Your favorite authors"]]
-     [:div {:class "fl w-60-ns w-100 h-100-ns h-50 pa"}
+     [:div {:class "fl w-60-ns w-100 h-100-ns h-75 pa"}
       [ResponsiveContainer {:width "100%" :height "100%"}
        [ScatterChart {:width 100 :height 100}
         [XAxis {:dataKey "review-count" :stroke "#333333" :name "Number of books read" :unit " books" :type "number"}]
@@ -282,7 +312,7 @@
   [data]
   [:div {:class "vh-100 bg-dark-green pa3 center"}
    [:div
-    [:h1 {:class "f-headline-ns f-subheadline tracked-tight lh-solid b v-top light-yellow tc"} "Your authors by country"]
+    [:h1 {:class "f-headline-ns f1  tracked-tight lh-solid b v-top light-yellow tc"} "Your authors by country"]
     [:h1 {:class "f3 lh-solid tc georgia normal light-yellow"} "Hover to see the authors' names"]]
    [:div {:class "tc-l"}
     [WorldMap {:color           "#FBF1A9" :value-prefix "-" :fillOpacity 1
@@ -304,7 +334,7 @@
     [:div {:class "vh-100 w-100 bg-dark-gray pa2 "}
      [:div {:class "w-100 h-25"}]
      [:div {:class "w-100"}
-      [:h1 {:class "f-headline tracked-tight tc lh-solid b v-btm washed-green"}
+      [:h1 {:class "f-subheadline tracked-tight tc lh-solid b v-btm washed-green"}
        (str "In 2020 you've read " (count authors) " authors")]]
      [:div {:class "w-100 h-25"}]
      ]))
@@ -332,12 +362,9 @@
 
 (defn the-end
   []
-  [:div {:class "vh-100 w-100 bg-light-green pa2 "}
-   [:div {:class "w-100 h-25"}]
-   [:div {:class "w-100"}
-    [:h1 {:class "f-headline tracked-tight tc lh-solid b v-btm washed-green"}
-     "That's all for this year. See you in 2021!"]]
-   [:div {:class "w-100 h-25"}]])
+  [:div {:class "vh-100 w-100 bg-light-green pa2"}
+   [:h1 {:class "f-headline-ns f-subheadline tracked-tight tc lh-solid b v-btm washed-green"}
+    "That's all for this year. See you in 2021!"]])
 
 
 (defn statistics-component [books]

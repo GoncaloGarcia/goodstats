@@ -8,14 +8,16 @@
             [clj-time.core :as t]
             [clj-time.local :as l]
             [oauth.client :as oauth]
-            [clojure.tools.reader.edn :as edn]))
+            [clojure.tools.reader.edn :as edn]
+            [com.climate.claypoole :as cp]
+            [goodstats.pool.pool :as pool]))
 
 (defn get-shelf-books-response
   "Retrieves Goodreads Shelf data by id and returns
   a parsed XML structure"
   [user key consumer token page]
   (data/parse-str
-    ((let [url (str "https://www.goodreads.com/review/list/" user ".xml")
+    ((let [url (str (System/getenv "GOODREADS_URL") "/review/list/" user ".xml")
            params {:v        2
                    :key      key
                    :shelf    ""
@@ -88,10 +90,10 @@
   (let [books-with-authors (filter #(> (count (get-in %1 [:book :authors])) 0) books)]
     (->> books-with-authors
          (flatten-author-and-book)
-         (map #(select-keys %1 [:rating :author-link :author-id :author-name :author-image_url :title]))
+         (map #(select-keys %1 [:rating :author-link :author-id :author-name :author-image_url :title_without_series]))
          (group-by :author-id)
          (map #(combine-author-books (val %1)))
-         (pmap #(merge %1 {:country (authors/get-author-country (:author-link %1))}))
+         (cp/upmap pool/thread-pool #(merge %1 {:country (authors/get-author-country (:author-link %1))}))
          (map #(merge %1 (let [elements (map edn/read-string (flatten (list (:rating %1))))
                                avg (/ (reduce + elements) (count elements))]
                            {:avg-rating avg})))

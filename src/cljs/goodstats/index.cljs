@@ -7,6 +7,7 @@
     [hodgepodge.core :refer [local-storage]]
     [goodstats.stats :as stats]
     [goodstats.oauth :as oauth]
+    [goodstats.constants :refer [SERVER_ADDR QUOTES]]
     [ajax.core :as ajax]))
 
 (defonce match (ratom/atom nil))
@@ -26,14 +27,25 @@
          "Log-in with Goodreads"]]])))
 
 (defn loading-component [match]
-  (let [id (get-in match [:parameters :query :oauth_token])]
-    (ajax/ajax-request {:uri             (str "http://134.122.9.217/user/" id "/stats")
+  (let [id (get-in match [:parameters :query :oauth_token])
+        quote (ratom/atom "")
+        ui (fn [match] [:div {:class "login vh-100 w-100 h-100 bg-gold pa2"}
+                        [:div {:class "w-100 h-50"}
+                         [:h1 {:class "f-headline-ns f1 lh-title tracked-tight tc lh-solid b v-mid near-black"}
+                          (str "Please wait while our team of librarians processes your data")]]
+                        [:div {:class "w-100 h-25"}
+                         [:h1 {:class "f3 lh-title tracked-tight tc lh-solid b v-mid near-black"}
+                          "In the meantime, here are some famous quotes:"]]
+                        [:div {:class "w-100 h-25"}
+                         [:h1 {:class "f4 courier lh-title tracked-tight tc lh-solid b v-mid near-black"}
+                          @quote]]])]
+    (ajax/ajax-request {:uri             (str SERVER_ADDR "/user/" id "/stats")
                         :method          :post
                         :format          (ajax/json-request-format)
                         :response-format (ajax/json-response-format {:keywords? true})
                         :handler         (fn check [response]
                                            (if (= "OK" (second response))
-                                             (ajax/ajax-request {:uri             (str " http://134.122.9.217/user/" id "/stats")
+                                             (ajax/ajax-request {:uri             (str SERVER_ADDR "/user/" id "/stats")
                                                                  :method          :get
                                                                  :format          (ajax/json-request-format)
                                                                  :response-format (ajax/json-response-format {:keywords? true})
@@ -45,11 +57,10 @@
                                                                                         (rfe/push-state ::results))
                                                                                       (do
                                                                                         (println "Trying again")
+                                                                                        (reset! quote (rand-nth QUOTES))
                                                                                         (js/setTimeout #(check [true "OK"]) 10000))))})
                                              ))})
-    [:div {:class "vh-100 w-100 h-100 bg-gold pa2 flex items-center"}
-     [:h1 {:class "f-headline-ns f1 lh-title tracked-tight tc lh-solid b v-mid near-black"}
-      (str "Please wait while our team of librarians processes your data")]]))
+    ui))
 
 
 (def routes
