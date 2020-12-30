@@ -224,9 +224,13 @@
     (let [books (books/get-user-books user consumer token)
           read-this-year (books-read-this-year books)
           with-extra-data (books-with-extra-data read-this-year)
-          result {:book-stats   (do-book-stats with-extra-data books)
-                  :author-stats (do-author-stats books)
-                  :genre-stats  (do-genre-stats with-extra-data)}]
+          result (if (empty? books)
+                   {:book-stats '()
+                    :author-stats '()
+                    :genre-stats '()}
+                   {:book-stats   (do-book-stats with-extra-data books)
+                    :author-stats (do-author-stats books)
+                    :genre-stats  (do-genre-stats with-extra-data)})]
       result)))
 
 (defn handle-message
@@ -246,7 +250,7 @@
   (let [id (String. payload "UTF-8")
         access-token (do
                        (timbre/info (str "Received AMQP message after: " (- (System/currentTimeMillis) (Long/parseLong id))))
-                        "ABC")
+                       "ABC")
         auth-user-id (do
                        (timbre/info (str "Oauth token: " access-token))
                        "ABC")]

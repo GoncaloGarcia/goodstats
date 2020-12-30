@@ -22,7 +22,7 @@
       [:div {:class "vh-100 w-100 h-100 bg-gold pa2 center flex items-center"}
        [:div {:class "flex-column"}
         [:h1 {:class "f-headline-ns f1 lh-title tracked-tight tc lh-solid b v-mid near-black"}
-         "Welcome to your 2020 Reading Review"]
+         "Welcome to your 2020 Reading Year"]
         [:h1 {:styles #js {:cursor "pointer"} :class "underline link dim f3s lh-title tracked-tight lh-solid b v-mid near-black tc" :onClick oauth/login-goodreads}
          "Log-in with Goodreads"]]])))
 
@@ -32,11 +32,12 @@
         ui (fn [match] [:div {:class "login vh-100 w-100 h-100 bg-gold pa2"}
                         [:div {:class "w-100 h-50"}
                          [:h1 {:class "f-headline-ns f1 lh-title tracked-tight tc lh-solid b v-mid near-black"}
-                          (str "Please wait while our team of librarians processes your data")]]
+                          (str "Please wait while our team of librarians processes your data")]
+                         [:h1 {:class "f3 lh-title tracked-tight tc lh-solid b v-mid near-black"}
+                          "They're only two, so you have been placed in the queue. Keep this page open and it will update with the results."]]
                         [:div {:class "w-100 h-25"}
                          [:h1 {:class "f3 lh-title tracked-tight tc lh-solid b v-mid near-black"}
-                          "In the meantime, here are some famous quotes:"]]
-                        [:div {:class "w-100 h-25"}
+                          "In the meantime, here are some famous quotes:"]
                          [:h1 {:class "f4 courier lh-title tracked-tight tc lh-solid b v-mid near-black"}
                           @quote]]])]
     (ajax/ajax-request {:uri             (str SERVER_ADDR "/user/" id "/stats")

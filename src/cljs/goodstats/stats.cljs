@@ -10,9 +10,13 @@
     ["react-image-show" :default SlideShow]
     ["react-svg-worldmap" :refer (WorldMap)]
     ["recharts" :as recharts]
+    ["react-share" :refer [FacebookShareButton TwitterShareButton TwitterIcon FacebookIcon]]
     [clojure.string :as str]))
 
-
+(def TwitterShareButton (reagent/adapt-react-class TwitterShareButton))
+(def TwitterIcon (reagent/adapt-react-class TwitterIcon))
+(def FacebookShareButton (reagent/adapt-react-class FacebookShareButton))
+(def FacebookIcon (reagent/adapt-react-class FacebookIcon))
 (def WorldMap (reagent/adapt-react-class WorldMap))
 (def ReactBubbleChart (reagent/adapt-react-class BubbleChart))
 (def SlideShow (reagent/adapt-react-class SlideShow))
@@ -109,8 +113,7 @@
         [Legend {:formatter (fn [value entry index]
                               (reagent/as-element [:span {:style {:color "#19A974"}} (. entry -value)]))}]
         [Tooltip]
-        [Bar {:name "Number of Pages" :dataKey "num_pages" :fill "#19A974"}]
-        ]]]
+        [Bar {:name "Number of Pages" :dataKey "num_pages" :fill "#19A974"}]]]]
      [:div {:class "fl  w-100 w-40-ns h-75-ns h-25"}
       [:h1 {:class "f-headline-ns f2 tracked-tight lh-solid b v-top green tr"}
        "The shortest books you've read."]
@@ -361,10 +364,18 @@
         "Wow, so ecletic!"]]]]))
 
 (defn the-end
-  []
-  [:div {:class "vh-100 w-100 bg-light-green pa2"}
-   [:h1 {:class "f-headline-ns f-subheadline tracked-tight tc lh-solid b v-btm washed-green"}
-    "That's all for this year. See you in 2021!"]])
+  [data]
+  (let [books (count (get-in data [:book-stats :all]))]
+    [:div {:class "vh-100 w-100 bg-light-green pa2 center"}
+     [:h1 {:class "f-headline-ns f-subheadline tracked-tight tc lh-solid b v-btm washed-green"}
+      "That's all for this year. See you in 2021!"]
+     [:div {:class "w-100 tc pa2"}
+      [:h1 {:class "f1-ns f3 tracked-tight tc lh-solid b v-btm washed-green"}
+       "Share with your friends"]
+      [:> TwitterShareButton {:url "http://readingyear.com" :title (str "I've read " books " books in 2020. What about you?")}
+       [:> TwitterIcon {:size 32 :round true}]]
+      [:> FacebookShareButton {:url "http://readingyear.com" :quote (str "I've read " books " books in 2020. What about you?")}
+       [:> FacebookIcon {:size 32 :round true}]]]]))
 
 
 (defn statistics-component [books]
@@ -385,7 +396,7 @@
             (all-authors books-data)
             (favorite-authors books-data)
             (world-map books-data)
-            (the-end)])))
+            (the-end books-data)])))
 
 
 

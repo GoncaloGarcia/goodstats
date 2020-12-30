@@ -50,7 +50,6 @@
                  "\"Life isn't about finding yourself. Life is about creating yourself.\" ― George Bernard Shaw"
                  "\"To the well-organized mind, death is but the next great adventure.\" ― J.K. Rowling"
                  "\"I'm not afraid of death; I just don't want to be there when it happens.\" ― Woody Allen"
-                 "If one cannot enjoy reading a book over and over again, there is no use"
                  "\"If one cannot enjoy reading a book over and over again, there is no use in reading it at all.\" ― Oscar Wilde"
                  "\"Logic will get you from A to Z; imagination will get you everywhere.\" ― Albert Einstein"
                  "\"Whenever I feel the need to exercise, I lie down until it goes away.\" ― Paul Terry"

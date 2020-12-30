@@ -1,2 +1,2 @@
-goodstats-web=Dockerfile-web
+api=Dockerfile-web
 goodstats-consumer=Dockerfile-consumer
