@@ -106,10 +106,12 @@
   ([books] (get-this-years-books books :date_added))
   ([books key]
    (let [formatter (f/formatter "E MMMM dd H:m:s Z YYYY")
-         current-year-epoch (c/to-long (t/date-time (t/year (l/local-now))))]
+         last-day (clj-time.coerce/to-long "2021-01-01T00:00:00.000Z")
+         first-day (clj-time.coerce/to-long "2020-01-01T00:00:00.000Z")]
      (filter (fn [date]
                (let [date-added (c/to-long (f/parse formatter (date key)))]
-                 (> date-added current-year-epoch)))
+                 (and (> date-added first-day)
+                      (< date-added last-day))))
              books))))
 
 

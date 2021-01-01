@@ -2,6 +2,10 @@
     overflow: inherit !important;
 }
 
+.chonk {
+    max-width: 40em;
+}
+
 .link {
     cursor: pointer;
 }

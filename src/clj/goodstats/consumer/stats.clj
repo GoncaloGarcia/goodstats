@@ -224,7 +224,7 @@
     (let [books (books/get-user-books user consumer token)
           read-this-year (books-read-this-year books)
           with-extra-data (books-with-extra-data read-this-year)
-          result (if (empty? books)
+          result (if (empty? read-this-year)
                    {:book-stats '()
                     :author-stats '()
                     :genre-stats '()}
@@ -265,7 +265,7 @@
 (comment
   (do
     (:require '[oauth.client :as oauth])
-    (def user (System/getenv "USER_ID"))
+    (def user 127374827)
     (def token (System/getenv "API_KEY"))
     (def consumer (oauth.client/make-consumer token
                                               (System/getenv "API_SECRET")

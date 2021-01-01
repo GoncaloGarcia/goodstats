@@ -19,26 +19,26 @@
     (if @match
       (let [view (:view (:data @match))]
         [view @match])
-      [:div {:class "vh-100 w-100 h-100 bg-gold pa2 center flex items-center"}
+      [:div {:class "vh-100 w-100 h-100 bg-gold pa2 center flex items-center justify-center"}
        [:div {:class "flex-column"}
         [:h1 {:class "f-headline-ns f1 lh-title tracked-tight tc lh-solid b v-mid near-black"}
          "Welcome to your 2020 Reading Year"]
         [:h1 {:styles #js {:cursor "pointer"} :class "underline link dim f3s lh-title tracked-tight lh-solid b v-mid near-black tc" :onClick oauth/login-goodreads}
-         "Log-in with Goodreads"]]])))
+         "Log-in with Goodreads"]
+        [:h1 {:class "f5 lh-title tracked-tight lh-solid b v-mid near-black tc"}
+         "If you're on iOS and have the Goodreads app installed, please open in an incognito tab and log-in through the browser. There is a bug with the app that prevents this site from working."]]])))
 
 (defn loading-component [match]
   (let [id (get-in match [:parameters :query :oauth_token])
         quote (ratom/atom "")
         ui (fn [match] [:div {:class "login vh-100 w-100 h-100 bg-gold pa2"}
                         [:div {:class "w-100 h-50"}
-                         [:h1 {:class "f-headline-ns f1 lh-title tracked-tight tc lh-solid b v-mid near-black"}
-                          (str "Please wait while our team of librarians processes your data")]
-                         [:h1 {:class "f3 lh-title tracked-tight tc lh-solid b v-mid near-black"}
-                          "They're only two, so you have been placed in the queue. Keep this page open and it will update with the results."]]
+                         [:h1 {:class "f-headline-ns f2 lh-title tracked-tight tc lh-solid b v-mid near-black"}
+                          (str "Please keep this page open while our two librarians process your data")]]
                         [:div {:class "w-100 h-25"}
-                         [:h1 {:class "f3 lh-title tracked-tight tc lh-solid b v-mid near-black"}
+                         [:h1 {:class "f3-ns f4 lh-title tc lh-solid b v-mid near-black"}
                           "In the meantime, here are some famous quotes:"]
-                         [:h1 {:class "f4 courier lh-title tracked-tight tc lh-solid b v-mid near-black"}
+                         [:h1 {:class "f4-ns f5 courier lh-title tc lh-solid b v-mid near-black"}
                           @quote]]])]
     (ajax/ajax-request {:uri             (str SERVER_ADDR "/user/" id "/stats")
                         :method          :post

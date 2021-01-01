@@ -50,6 +50,14 @@
   []
   (> (. js/window -innerHeight) (. js/window -innerWidth)))
 
+(defn is-small
+  []
+  (> 600 (. js/window -innerHeight)))
+
+(defn is-chonk
+  []
+  (and (< 1000 (. js/window -innerHeight)) (> 1300 (. js/window -innerHeight))))
+
 (defn all-books
   [data]
   (let [books (get-in data [:book-stats :all])]
@@ -66,11 +74,11 @@
 (defn average
   [data]
   (let [avg (get-in data [:book-stats :average-pages])]
-    [:div {:class "vh-100 w-100 bg-black pa5 "}
+    [:div {:class "vh-100 w-100 bg-black pa5"}
      [:div {:class "w-100 h-25"}]
      [:div {:class "w-100 h-50"}
 
-      [:h1 {:class "f-headline-ns f1 lh-title tracked-tight tc lh-solid b v-mid light-red"}
+      [:h1 {:class (str "f-headline-ns " (if (is-small) "f2" "f1") " lh-title tracked-tight tc lh-solid b v-mid light-red")}
        (str "Each book had an average of " avg " pages")]
       [:div {:class "w-100 h-25"}]
       ]]))
@@ -80,15 +88,15 @@
   (let [books (get-in data [:book-stats :top-5-longest])
         largest (first (map #(edn/read-string (:num_pages %1)) books))]
     (println books)
-    [:div {:class "vh-100 bg-green pa3 cf items-center"}
+    [:div {:class "vh-100 bg-green pa3"}
      [:div {:class "fl w-100 w-40-ns h-75-ns h-25"}
-      [:h1 {:class "f-headline-ns f1 tracked-tight lh-solid b v-top black"}
+      [:h1 {:class (str "f-headline-ns " (if (is-small) "f3" "f2") " tracked-tight lh-solid b v-top black")}
        "The largest books you've read."]
       [:div {:class "h-25-ns w-100 black"}
        [:h1 {:class "f3-ns f4 lh-solid tc georgia normal black"}
         "Oh Lawd They Comin'"]]]
-     [:div {:class "fl w-60-ns w-100 h-100-ns h-75 flex pa items-center"}
-      [ResponsiveContainer {:width "100%" :height (if (is-portrait) "75%" "95%")}
+     [:div {:class "fl w-60-ns w-100 h-100-ns h-75"}
+      [ResponsiveContainer {:width "100%" :height (if (is-portrait) "100%" "95%")}
        [BarChart {:width 800 :height 500 :data books}
         [XAxis {:stroke "black" :dataKey "title" :tick false}]
         [YAxis {:width 40 :stroke "black " :scale "linear" :orientation "left" :type "number" :domain #js [0, largest]}]
@@ -128,7 +136,7 @@
      [:div {:class "fl w-100 h-100 "}
       [:div {:class "w-100 h-25"}]
       [:div {:class "w-100 h-50"}
-       [:h1 {:class "f-headline-ns f1 lh-title tracked-tight tc v-mid lh-solid b gold"}
+       [:h1 {:class (str "f-headline-ns " (if (is-small) "f2" "f1") " lh-title tracked-tight tc v-mid lh-solid b gold")}
         (str "You've read " avg " books per month")]]
       [:div {:class "w-100 h-25"}]]]))
 
@@ -147,7 +155,7 @@
       [Area {:type "monotone" :name "Books Read (Absolute)" :fill "#357EDD" :stroke "#357EDD" :fillOpacity 1 :dataKey "count"}]
       ]]]
    [:div
-    [:h1 {:class "f-headline-ns f1 tracked-tight lh-solid b v-top navy tr-ns tc"} "Your breakdown by month"]]])
+    [:h1 {:class (str "f-headline-ns " (if (is-small) "f2" "f1") " tracked-tight lh-solid b v-top navy tr-ns tc")} "Your breakdown by month"]]])
 
 (defn books-by-read-count
   [data]
@@ -155,7 +163,7 @@
         max (max (map :count data))]
     [:div {:class "vh-100 vh-25 bg-blue pa3 center"}
      [:div {:class "vh-25 "}
-      [:h1 {:class "f-headline-ns f1 tracked-tight lh-solid b v-top washed-red tc"} "Your reading speed breakdown"]]
+      [:h1 {:class (str "f-headline-ns " (if (is-small) "f2" "f1") " tracked-tight lh-solid b v-top washed-red tc")} "Your reading speed breakdown"]]
      [:div {:class "h-50 w-100"}
       [ResponsiveContainer {:width "100%" :height "150%"}
        [RadialBarChart {:width       "100%" :height "10%" :data data
@@ -163,7 +171,7 @@
         [PolarAngleAxis {:tick false :type "number" :domain #js [0 max] :dataKey "count" :angleAxisId 0}]
         [RadialBar {:dataKey "count" :minAngle 5 :label #js {:fill "#FFDFDF"} :background #js {:fill "#FFDFDF"} :angleAxisId 0}]
         [Legend {:verticalAlign (if (is-portrait) "top" "middle")
-                 :wrapperStyle  #js {:paddingTop "5%"}
+                 :wrapperStyle  #js {:paddingTop (if (is-small) "1%" "5%")}
                  :formatter     (fn [value entry index]
                                   (reagent/as-element [:span {:style {:color "#FFDFDF"}} (. entry -value)]))
                  }]]]]]))
@@ -172,7 +180,7 @@
   [data]
   [:div {:class "vh-100 bg-washed-green pa3"}
    [:div {:class "fl w-100 w-40-ns h-75-ns h-25"}
-    [:h1 {:class "f-headline-ns f1 tracked-tight lh-solid b v-top near-black"}
+    [:h1 {:class (str "f-headline-ns " (if (is-small) "f2" "f1") " tracked-tight lh-solid b v-top near-black")}
      "You've read these the fastest."]]
    [:div {:class "fl w-60-ns w-100 h-100-ns h-75 pa "}
     [ResponsiveContainer {:width "100%" :height "100%"}
@@ -191,7 +199,7 @@
         max (:read-time-days (first books))]
     [:div {:class "vh-100 bg-near-black pa3"}
      [:div {:class "fl w-100 w-40-ns h-75-ns h-25"}
-      [:h1 {:class "f-headline-ns f1 tracked-tight lh-solid b v-top blue tl"}
+      [:h1 {:class (str "f-headline-ns " (if (is-small) "f2" "f1") " tracked-tight lh-solid b v-top blue tl")}
        "Your slowest reads"]
       [:div {:class "h-25 w-100 lightest-blue"}
        [:h1 {:class "f3-ns f5 lh-solid tl georgia normal blue"}
@@ -255,10 +263,10 @@
   (let [books (get-in data [:book-stats :rating-by-page-count])]
     [:div {:class "vh-100 bg-gold pa3"}
      [:div {:class ""}
-      [:h1 {:class "f-headline-ns f-subheadline tracked-tight lh-solid b v-top navy tr"}
+      [:h1 {:class (str "f-headline-ns " (if (is-small) "f1" "f-subheadline") " tracked-tight lh-solid b v-top navy tr")}
        "Does size matter?"]]
      [:div {:class "fl w-100 h-50"}
-      [ResponsiveContainer {:width "100%" :height (if (is-portrait) "100%" "120%")}
+      [ResponsiveContainer {:width "100%" :height "120%"}
        [ScatterChart {:width 100 :height 100}
         [XAxis {:dataKey "pages" :stroke "#001B44" :name "Number of Pages" :unit " pages" :type "number"}]
         [YAxis {:width 30 :dataKey "rating" :stroke "#001B44" :name "Rating" :unit " stars" :type "number"
@@ -292,10 +300,10 @@
                                       elements)))
                         grouped-books)]
     [:div {:class "vh-100 bg-light-yellow pa3"}
-     [:div {:class "fl w-40-ns w-100 h-75-ns h-25"}
-      [:h1 {:class "f-headline-ns f1 tracked-tight lh-solid b v-top dark-gray tl"}
+     [:div {:class (str "fl " (if (is-portrait) "w-100 h-25" "w-40-ns h-75-ns"))}
+      [:h1 {:class (str "f-headline-ns " (if (is-small) "f2" "f1") " tracked-tight lh-solid b v-top dark-gray tl")}
        "Your favorite authors"]]
-     [:div {:class "fl w-60-ns w-100 h-100-ns h-75 pa"}
+     [:div {:class (str "fl pa " (if (is-portrait) "w-100 h-75" "w-60-ns h-100-ns"))}
       [ResponsiveContainer {:width "100%" :height "100%"}
        [ScatterChart {:width 100 :height 100}
         [XAxis {:dataKey "review-count" :stroke "#333333" :name "Number of books read" :unit " books" :type "number"}]
@@ -315,8 +323,7 @@
   [data]
   [:div {:class "vh-100 bg-dark-green pa3 center"}
    [:div
-    [:h1 {:class "f-headline-ns f1  tracked-tight lh-solid b v-top light-yellow tc"} "Your authors by country"]
-    [:h1 {:class "f3 lh-solid tc georgia normal light-yellow"} "Hover to see the authors' names"]]
+    [:h1 {:class "f-headline-ns f1  tracked-tight lh-solid b v-top light-yellow tc"} "Your authors by country"]]
    [:div {:class "tc-l"}
     [WorldMap {:color           "#FBF1A9" :value-prefix "-" :fillOpacity 1
                :frame           false :size "xl" :data (filter #(not (nil? (:country %))) (get-in data [:author-stats :country]))
@@ -327,9 +334,7 @@
                                        :strokeWidth   1
                                        :stroke        "#137752"
                                        :fill          "#FBF1A9"
-                                       :fillOpacity   1})}]]
-   ]
-  )
+                                       :fillOpacity   1})}]]])
 
 (defn all-authors
   [data]
@@ -337,7 +342,7 @@
     [:div {:class "vh-100 w-100 bg-dark-gray pa2 "}
      [:div {:class "w-100 h-25"}]
      [:div {:class "w-100"}
-      [:h1 {:class "f-subheadline tracked-tight tc lh-solid b v-btm washed-green"}
+      [:h1 {:class (str (if (is-small) "f1" "f-subheadline")" tracked-tight tc lh-solid b v-btm washed-green")}
        (str "In 2020 you've read " (count authors) " authors")]]
      [:div {:class "w-100 h-25"}]
      ]))
@@ -346,7 +351,14 @@
   [data]
   (let [books (get-in data [:genre-stats :all])]
     [:div {:class "vh-100 bg-navy pa3"}
-     [:div {:class "fl mw7 w-50-ns w-100 h-100-ns h-50 pa"}
+     [:div {:class (str (if (is-portrait) " w-100" "w-50-ns h-75-ns") " fl")}
+      [:h1 {:class (str "f-headline-ns f1 tracked-tight lh-solid b v-top gold " (if (is-portrait) "tr " "tl ")  (if (is-small) "f2" "mv2"))}
+       "These were the genres you read the most"]
+      [:div {:class (str (if (is-portrait) "h-25" "h-25-ns") " w-100 gold")}
+       [:h1 {:class "f3-ns f5 lh-solid tc georgia normal gold"}
+        "Wow, so ecletic!"]]]
+
+     [:div {:class (str (if (is-portrait) (str "w-100 h-25 " (if (is-chonk) "chonk" "")) "w-50-ns h-100-ns mw7 v-btm") " fl")}
       [ReactBubbleChart {
                          :graph      #js {:zoom 1}
                          :width      100
@@ -356,18 +368,13 @@
                          :showLegend false
                          :data       books
                          }]]
-     [:div {:class "fl w-50-ns w-100 h-75-ns h-25"}
-      [:h1 {:class "f-headline-ns f1 tracked-tight lh-solid b v-top gold tr"}
-       "These were the genres you read the most"]
-      [:div {:class "h-25-ns h-75 w-100 gold"}
-       [:h1 {:class "f3-ns f5 lh-solid tc georgia normal gold"}
-        "Wow, so ecletic!"]]]]))
+     ]))
 
 (defn the-end
   [data]
   (let [books (count (get-in data [:book-stats :all]))]
     [:div {:class "vh-100 w-100 bg-light-green pa2 center"}
-     [:h1 {:class "f-headline-ns f-subheadline tracked-tight tc lh-solid b v-btm washed-green"}
+     [:h1 {:class (str "f-headline-ns " (if (is-small) "f1" "f-subheadline") " tracked-tight tc lh-solid b v-btm washed-green")}
       "That's all for this year. See you in 2021!"]
      [:div {:class "w-100 tc pa2"}
       [:h1 {:class "f1-ns f3 tracked-tight tc lh-solid b v-btm washed-green"}
@@ -396,7 +403,8 @@
             (all-authors books-data)
             (favorite-authors books-data)
             (world-map books-data)
-            (the-end books-data)])))
+            (the-end books-data)
+            ])))
 
 
 

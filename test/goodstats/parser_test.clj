@@ -1,7 +1,7 @@
 (ns goodstats.parser-test
   (:require [clojure.test :refer :all]
             [clojure.data.xml :as data]
-            [goodstats.parser :as parser]))
+            [goodstats.goodreads.parser :as parser]))
 
 (deftest filter-unecessary-keys-test
   (testing "Correctly removes key from map"
