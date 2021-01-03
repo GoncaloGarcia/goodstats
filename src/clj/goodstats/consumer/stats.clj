@@ -104,7 +104,7 @@
   (let [authors-with-reviews-and-score
         (map #(hash-map
                 :author (:author-name %)
-                :review-count (count (flatten (list (:title_without_series %))))
+                :review-count (count (flatten (list (:title %))))
                 :review-score (Float/parseFloat (format "%.2f" (float (:avg-rating %)))))
              authors)]
     authors-with-reviews-and-score))
@@ -265,7 +265,7 @@
 (comment
   (do
     (:require '[oauth.client :as oauth])
-    (def user 127374827)
+    (def user (System/getenv "USER_ID"))
     (def token (System/getenv "API_KEY"))
     (def consumer (oauth.client/make-consumer token
                                               (System/getenv "API_SECRET")
