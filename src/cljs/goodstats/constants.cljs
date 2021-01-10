@@ -2,6 +2,7 @@
   )
 
 (goog-define SERVER_ADDR "http://localhost:8080")
+(goog-define CLIENT_ADDR "http://localhost:8081")
 
 (defonce QUOTES ["\"Be yourself; everyone else is already taken.\"― Oscar Wilde"
                  "\"Two things are infinite: the universe and human stupidity; and I'm not sure about the universe.\" ― Albert Einstein"

@@ -9,5 +9,6 @@
                 :app {:target     :browser
                       :output-dir "public/scripts/"
                       :asset-path "/scripts"
-                      :release {:closure-defines {goodstats.constants/SERVER_ADDR "https://api.readingyear.com"}}
+                      :release {:closure-defines {goodstats.constants/CLIENT_ADDR "https://readingyear.com"
+                                                  goodstats.constants/SERVER_ADDR "https://api.readingyear.com"}}
                       :modules    {:core {:init-fn goodstats.index/init!}}}}}

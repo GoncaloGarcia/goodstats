@@ -10,3 +10,7 @@
 (defn fetch
   [key]
   (wcar redis-connection (carmine/get key)))
+
+(defn evict
+  [key]
+  (wcar redis-connection (carmine/del key)))

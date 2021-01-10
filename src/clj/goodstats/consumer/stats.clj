@@ -3,6 +3,7 @@
             [clj-time.format :as f]
             [clj-time.core :as t]
             [clojure.set :as set]
+            [slingshot.slingshot :refer [try+]]
             [clojure.edn :as edn]
             [goodstats.cache.client :as cache]
             [iso-country-codes.core :as codes]
@@ -221,17 +222,20 @@
 (defn do-stats
   [user consumer token]
   (time
-    (let [books (books/get-user-books user consumer token)
-          read-this-year (books-read-this-year books)
-          with-extra-data (books-with-extra-data read-this-year)
-          result (if (empty? read-this-year)
-                   {:book-stats '()
-                    :author-stats '()
-                    :genre-stats '()}
-                   {:book-stats   (do-book-stats with-extra-data books)
-                    :author-stats (do-author-stats books)
-                    :genre-stats  (do-genre-stats with-extra-data)})]
-      result)))
+    (try+
+      (let [books (books/get-user-books user consumer token)
+            read-this-year (books-read-this-year books)
+            with-extra-data (books-with-extra-data read-this-year)
+            result (if (empty? read-this-year)
+                     {:book-stats   '()
+                      :author-stats '()
+                      :genre-stats  '()}
+                     {:book-stats   (do-book-stats with-extra-data books)
+                      :author-stats (do-author-stats books)
+                      :genre-stats  (do-genre-stats with-extra-data)})]
+        result)
+      (catch [:status 403] {}
+        {:error 403}))))
 
 (defn handle-message
   [ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]

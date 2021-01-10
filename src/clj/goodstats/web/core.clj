@@ -34,7 +34,9 @@
         results (cache/fetch (str "result-" auth-user-id))]
     (timbre/info (str "Attempting to fetch stats for: " auth-user-id))
     (if (nil? results)
-      (json/generate-string "")
+      (if (nil? (:error results))
+        (json/generate-string "")
+        (cache/evict (str "result-" auth-user-id)))
       (json/generate-string results))))
 
 (defn auth
